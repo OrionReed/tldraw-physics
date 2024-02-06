@@ -1,5 +1,5 @@
 # tldraw physics
-This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses Rapier, a rust-based physics engine compiled to [WASM](https://webassembly.org)
+This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses [Rapier](https://rapier.rs), a rust-based physics engine compiled to [WASM](https://webassembly.org)
 
 ![demo](https://github.com/OrionReed/tldraw-physics/assets/16704290/0967881e-1faa-46fb-8204-7b99a5a3556b)
 
@@ -34,6 +34,10 @@ Currently, only GeoShapes and DrawShapes are supported. Physical properties are 
 **Groups**
 You can group shapes to create compound rigidbodies. Physical properties will still work, so you can create shapes which are part ice and part rubber, for example.
 
+**Notes and Gotchas**
+- All geo shapes are treated as [convex hulls](https://en.wikipedia.org/wiki/Convex_hull)
+- Draw shapes use a very crude compound collider approach, where each vertex is turned into a sphere
+
 ## Known Issues
 - Simulation speed is not always consistent
 - Multiplayer hangs on connecting sometimes, for some browsers (Safari/Firefox)
@@ -42,4 +46,5 @@ You can group shapes to create compound rigidbodies. Physical properties will st
 Please open an issue or PR if you have any suggestions or improvements! Especially looking for:
 - Architecture improvements (the current implementation is... not great to say the least)
 - Better multiplayer support (There is a bug which stalls on "Connecting..." )
+- Proper compound collider generation for DrawShapes (e.g. using a series of rectangles instead of spheres)
 - Bugfixes!!
