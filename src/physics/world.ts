@@ -1,10 +1,13 @@
 import RAPIER from "@dimforge/rapier2d";
 import { CHARACTER, GRAVITY, MATERIALS, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody } from "./config";
-import { BodyWithShapeData, RigidbodyLookup } from "./types";
-import { Editor, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, VecLike } from "@tldraw/tldraw";
+import { Editor, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, TLShapeId, VecLike } from "@tldraw/tldraw";
 import { useEffect, useRef } from "react";
 import { centerToCorner, convertVerticesToFloat32Array, cornerToCenter, getDisplacement } from "./utils";
 
+type BodyWithShapeData = RAPIER.RigidBody & {
+  userData: { id: TLShapeId; type: TLShape["type"]; w: number; h: number };
+};
+type RigidbodyLookup = { [key: TLShapeId]: RAPIER.RigidBody };
 
 export class PhysicsWorld {
   private editor: Editor;
@@ -93,18 +96,24 @@ export class PhysicsWorld {
       height: characterShape.props.h,
       rotation: characterShape.rotation,
     });
-    // TODO: make this generic, not just capsule
-    const colliderDesc = RAPIER.ColliderDesc.capsule(
-      (characterShape.props.h - characterShape.props.w) / 2,
-      characterShape.props.w / 2,
+    const vertices = this.editor.getShapeGeometry(characterShape).vertices;
+    const vec2Array = convertVerticesToFloat32Array(
+      vertices,
+      characterShape.props.w,
+      characterShape.props.h,
     );
+    const colliderDesc = RAPIER.ColliderDesc.convexHull(vec2Array);
+    if (!colliderDesc) {
+      console.error("Failed to create collider description.");
+      return;
+    }
     const rigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
       .setTranslation(initialPosition.x, initialPosition.y)
       .setAdditionalMass(CHARACTER.additionalMass);
     const charRigidbody = this.world.createRigidBody(rigidBodyDesc);
     const charCollider = this.world.createCollider(colliderDesc, charRigidbody);
     const char = this.world.createCharacterController(0.1);
-    char.setUp({ x: 0.0, y: -1.0 });
+    char.setUp(CHARACTER.up);
     char.setMaxSlopeClimbAngle(CHARACTER.maxSlopeClimbAngle);
     char.setSlideEnabled(CHARACTER.slideEnabled);
     char.setMinSlopeSlideAngle(CHARACTER.minSlopeSlideAngle);

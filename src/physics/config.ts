@@ -20,6 +20,7 @@ export const MATERIALS = {
 	defaultFriction: 0.1,
 };
 export const CHARACTER = {
+	up: { x: 0.0, y: -1.0 },
 	additionalMass: 20,
 	maxSlopeClimbAngle: 1,
 	slideEnabled: true,

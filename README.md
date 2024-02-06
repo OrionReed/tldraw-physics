@@ -43,6 +43,7 @@ You can group shapes to create compound rigidbodies. Physical properties will st
 ## Known Issues
 - Simulation speed is not always consistent
 - Multiplayer hangs on connecting sometimes, for some browsers (Safari/Firefox)
+- There's a bug with groups where the physics geometry doesn't match the tldraw geometry
 
 # Contributing
 Please open an issue or PR if you have any suggestions or improvements! Especially looking for:
