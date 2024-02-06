@@ -23,10 +23,11 @@ yarn deploy
 
 ### Rules
 Currently, only GeoShapes and DrawShapes are supported. Physical properties are determined by the shape's props. The following are supported:
-- Grey/Black: Static Collider
+- Black: Static Collider
 - All other colors: Rigidbody with gravity
 
 **Special Props**
+- Grey: Zero gravity
 - Blue: Zero friction (i.e. ice)
 - Orange: High restitution coefficient (i.e. bouncy rubber)
 - Violet: character controller (move with arrow keys) - only works with oval shape for now
@@ -37,6 +38,7 @@ You can group shapes to create compound rigidbodies. Physical properties will st
 **Notes and Gotchas**
 - All geo shapes are treated as [convex hulls](https://en.wikipedia.org/wiki/Convex_hull)
 - Draw shapes use a very crude compound collider approach, where each vertex is turned into a sphere
+- There is no edge to the world, so rigidbodies will fall forever
 
 ## Known Issues
 - Simulation speed is not always consistent
