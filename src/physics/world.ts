@@ -1,5 +1,5 @@
 import RAPIER from "@dimforge/rapier2d";
-import { CHARACTER, GRAVITY, MATERIALS, getFrictionFromColor, getRestitutionFromColor, isRigidbody } from "./config";
+import { CHARACTER, GRAVITY, MATERIALS, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody } from "./config";
 import { BodyWithShapeData, RigidbodyLookup } from "./types";
 import { Editor, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, VecLike } from "@tldraw/tldraw";
 import { useEffect, useRef } from "react";
@@ -48,56 +48,36 @@ export class PhysicsWorld {
   }
 
   public addShapes(shapes: TLShape[]) {
-    const rectangleShapes: TLGeoShape[] = [];
-    const convexShapes: TLGeoShape[] = [];
-    const drawnShapes: TLDrawShape[] = [];
-    const groups: TLGroupShape[] = [];
-    const characters: TLGeoShape[] = [];
-
-    // Get shapes we want to add to physics world
+    // TODO: fix this hacky casting
     for (const shape of shapes) {
       switch (shape.type) {
         case "geo": {
           const geoShape = shape as TLGeoShape;
           if (geoShape.props.color === "violet") {
-            characters.push(geoShape);
-          } else {
-            if (geoShape.props.geo === "rectangle") {
-              rectangleShapes.push(geoShape);
-            } else {
-              convexShapes.push(geoShape);
-            }
+            this.createCharacter(geoShape);
+            break;
           }
+          this.createShape(geoShape);
           break;
         }
         case "image":
-          // TODO: fix this hacky casting
-          rectangleShapes.push(shape as TLGeoShape);
-          break;
         case "video":
-          rectangleShapes.push(shape as TLGeoShape);
+          this.createShape(shape as TLGeoShape)
           break;
         case "draw":
-          drawnShapes.push(shape as TLDrawShape);
+          this.createCompoundLine(shape as TLDrawShape);
           break;
         case "group":
-          groups.push(shape as TLGroupShape);
+          this.createGroup(shape as TLGroupShape)
           break;
       }
     }
-
-    // TODO: do this immediately without building lists
-    rectangleShapes.forEach((rect) => this.createShape(rect));
-    convexShapes.forEach((convexShape) => this.createShape(convexShape));
-    drawnShapes.forEach((drawnShape) => this.createCompoundLine(drawnShape));
-    characters.forEach((character) => this.createCharacter(character));
-    groups.forEach((group) => this.createGroup(group));
   }
 
   createShape(shape: TLGeoShape | TLDrawShape) {
     if (shape.props.dash === "dashed") return; // Skip dashed shapes
     if (isRigidbody(shape.props.color)) {
-      const gravity = shape.props.color === "grey" ? false : true;
+      const gravity = getGravityFromColor(shape.props.color)
       const rb = this.createRigidbody(shape, gravity);
       this.createCollider(shape, rb);
     } else {
@@ -262,7 +242,7 @@ export class PhysicsWorld {
   }
   private createRigidbody(
     shape: TLShape,
-    gravity = true,
+    gravity = 1,
   ): RAPIER.RigidBody {
     const dimensions = this.getShapeDimensions(shape);
     const centerPosition = cornerToCenter({
@@ -275,7 +255,7 @@ export class PhysicsWorld {
     const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(centerPosition.x, centerPosition.y)
       .setRotation(shape.rotation)
-      .setGravityScale(gravity ? 1 : 0);
+      .setGravityScale(gravity);
     const rigidbody = this.world.createRigidBody(rigidBodyDesc);
     this.rigidbodyLookup[shape.id] = rigidbody;
     rigidbody.userData = {

@@ -10,7 +10,7 @@ type ShapeTransform = {
 }
 
 // Define rotatePoint as a standalone function
-function rotatePoint(cx: number, cy: number, x: number, y: number, angle: number) {
+const rotatePoint = (cx: number, cy: number, x: number, y: number, angle: number) => {
 	const cos = Math.cos(angle);
 	const sin = Math.sin(angle);
 	return {
@@ -19,14 +19,14 @@ function rotatePoint(cx: number, cy: number, x: number, y: number, angle: number
 	};
 }
 
-export function cornerToCenter({
+export const cornerToCenter = ({
 	x,
 	y,
 	width,
 	height,
 	rotation,
 	parent
-}: ShapeTransform): { x: number; y: number } {
+}: ShapeTransform): { x: number; y: number } => {
 	// Calculate the center position
 	let centerX = x + width / 2;
 	let centerY = y + height / 2;
@@ -40,13 +40,13 @@ export function cornerToCenter({
 	return rotatePoint(x, y, centerX, centerY, rotation);
 }
 
-export function centerToCorner({
+export const centerToCorner = ({
 	x,
 	y,
 	width,
 	height,
 	rotation,
-}: ShapeTransform): { x: number; y: number } {
+}: ShapeTransform): { x: number; y: number } => {
 
 	const cornerX = x - width / 2;
 	const cornerY = y - height / 2;
@@ -54,13 +54,13 @@ export function centerToCorner({
 	return rotatePoint(x, y, cornerX, cornerY, rotation);
 }
 
-export function getDisplacement(
+export const getDisplacement = (
 	velocity: VecLike,
 	acceleration: VecLike,
 	timeStep: number,
 	speedLimitX: number,
 	decelerationX: number,
-): VecLike {
+): VecLike => {
 	let newVelocityX =
 		acceleration.x === 0 && velocity.x !== 0
 			? Math.max(Math.abs(velocity.x) - decelerationX * timeStep, 0) *
@@ -78,11 +78,11 @@ export function getDisplacement(
 	return { x, y }
 }
 
-export function convertVerticesToFloat32Array(
+export const convertVerticesToFloat32Array = (
 	vertices: Vec2d[],
 	width: number,
 	height: number,
-) {
+) => {
 	const vec2Array = new Float32Array(vertices.length * 2);
 	const hX = width / 2;
 	const hY = height / 2;
