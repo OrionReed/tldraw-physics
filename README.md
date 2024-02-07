@@ -1,7 +1,7 @@
 # tldraw physics
 This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses [Rapier](https://rapier.rs), a rust-based physics engine compiled to [WASM](https://webassembly.org)
 
-![demo](https://github.com/OrionReed/tldraw-physics/assets/16704290/0967881e-1faa-46fb-8204-7b99a5a3556b)
+https://github.com/OrionReed/tldraw-physics/assets/16704290/0967881e-1faa-46fb-8204-7b99a5a3556b
 
 ## Setup
 ```bash
