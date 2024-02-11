@@ -1,8 +1,8 @@
 import { Tldraw, track, useEditor } from "@tldraw/tldraw";
 import "@tldraw/tldraw/tldraw.css";
-import { PhysicsUI } from "./physicsUI";
+import { SimControls } from "./physics/ui/PhysicsControls";
 import { useYjsStore } from "./useYjsStore";
-import { uiOverrides } from "./ui-overrides";
+import { uiOverrides } from "./physics/ui/overrides";
 
 const HOST_URL = import.meta.env.DEV
 	? "ws://localhost:1234"
@@ -24,7 +24,7 @@ export default function Canvas() {
 				shareZone={<NameEditor />}
 				overrides={uiOverrides}
 			>
-				<PhysicsUI />
+				<SimControls />
 			</Tldraw>
 		</div>
 	);

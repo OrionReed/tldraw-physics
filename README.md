@@ -46,8 +46,8 @@ Please open an issue or PR if you have any suggestions or improvements! Especial
 - Architecture improvements, refactoring, and simplification
 - Compound collider creation for DrawShapes (using a series of rectangles between points instead of spheres at points)
 - Performance improvements (and identifying performance bottlenenecks)
-- Bugfixes!!
+- Bugfixes
 
 ## Known Issues (fixes welcome!)
-- Simulation speed is not always consistent
+- Simulation speed is not always consistent as it's tied to refresh rate
 - Multiplayer hangs on connecting sometimes, for some browsers (Safari/Firefox)

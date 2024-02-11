@@ -1,9 +1,9 @@
 import { track, useEditor } from "@tldraw/tldraw";
 import { useEffect, useState } from "react";
-import { usePhysicsSimulation } from "./physics/simulation";
-import "./css/dev-ui.css";
+import { usePhysicsSimulation } from "../simulation";
+import "../../css/physics-ui.css";
 
-export const PhysicsUI = track(() => {
+export const SimControls = track(() => {
 	const editor = useEditor();
 	const [physicsEnabled, setPhysics] = useState(false);
 
