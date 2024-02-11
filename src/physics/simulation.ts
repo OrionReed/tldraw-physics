@@ -13,7 +13,7 @@ export class PhysicsWorld {
   private editor: Editor;
   private world: RAPIER.World;
   private rigidbodyLookup: RigidbodyLookup;
-  private animFrame: number | null = null; // Store the animation frame id
+  private animFrame = -1; // Store the animation frame id
   private character: {
     rigidbody: RAPIER.RigidBody | null;
     collider: RAPIER.Collider | null;
@@ -26,53 +26,47 @@ export class PhysicsWorld {
   }
 
   public start() {
-    // consider moving to constructor
     this.world = new RAPIER.World(GRAVITY);
 
     this.addShapes(this.editor.selectedShapes);
 
-    let animFrame: number;
     const simLoop = () => {
       this.world.step();
-      // TODO: check if character update works better before step()
       this.updateCharacterControllers();
       this.updateRigidbodies();
       this.animFrame = requestAnimationFrame(simLoop);
     };
     simLoop();
-    return () => cancelAnimationFrame(animFrame);
+    return () => cancelAnimationFrame(this.animFrame);
   };
 
   public stop() {
-    if (this.animFrame !== null) {
+    if (this.animFrame !== -1) {
       cancelAnimationFrame(this.animFrame);
-      this.animFrame = null;
+      this.animFrame = -1;
     }
   }
 
   public addShapes(shapes: TLShape[]) {
-    // TODO: fix this hacky casting
     for (const shape of shapes) {
+      if ('color' in shape.props && shape.props.color === "violet") {
+        this.createCharacter(shape as TLGeoShape);
+        continue;
+      }
+
       switch (shape.type) {
-        case "geo": {
-          const geoShape = shape as TLGeoShape;
-          if (geoShape.props.color === "violet") {
-            this.createCharacter(geoShape);
-            break;
-          }
-          this.createShape(geoShape);
-          break;
-        }
+        case "geo":
         case "image":
         case "video":
-          this.createShape(shape as TLGeoShape)
+          this.createShape(shape as TLGeoShape);
           break;
         case "draw":
           this.createCompoundLine(shape as TLDrawShape);
           break;
         case "group":
-          this.createGroup(shape as TLGroupShape)
+          this.createGroup(shape as TLGroupShape);
           break;
+        // Add cases for any new shape types here
       }
     }
   }
