@@ -7,7 +7,7 @@ export const PhysicsUI = track(() => {
 	const editor = useEditor();
 	const [physicsEnabled, setPhysics] = useState(false);
 
-	usePhysicsSimulation(editor, physicsEnabled);
+	const { addShapes } = usePhysicsSimulation(editor, physicsEnabled);
 
 	return (
 		<div className="custom-layout">
@@ -19,6 +19,13 @@ export const PhysicsUI = track(() => {
 					onClick={() => setPhysics(!physicsEnabled)}
 				>
 					Physics
+				</button>
+				<button
+					type="button"
+					className="custom-button"
+					onClick={() => addShapes(editor.selectedShapes)}
+				>
+					+
 				</button>
 			</div>
 		</div>

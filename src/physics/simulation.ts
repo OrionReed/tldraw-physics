@@ -396,6 +396,6 @@ export function usePhysicsSimulation(editor: Editor, enabled: boolean) {
 
   // Return any values or functions that the UI components might need
   return {
-    addShapes: (shapes: TLDrawShape[]) => sim.current.addShapes(shapes),
+    addShapes: (shapes: TLShape[]) => sim.current.addShapes(shapes),
   };
 }
