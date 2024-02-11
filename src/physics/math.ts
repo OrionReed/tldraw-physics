@@ -27,17 +27,16 @@ export const cornerToCenter = ({
 	rotation,
 	parent
 }: ShapeTransform): { x: number; y: number } => {
-	// Calculate the center position
-	let centerX = x + width / 2;
-	let centerY = y + height / 2;
+	const centerX = x + width / 2;
+	const centerY = y + height / 2;
+	const rotatedCenter = rotatePoint(x, y, centerX, centerY, rotation);
 
 	if (parent) {
-		centerX -= parent.center.x;
-		centerY -= parent.center.y;
+		rotatedCenter.x -= parent.center.x;
+		rotatedCenter.y -= parent.center.y;
 	}
 
-	// Apply the rotation to the center position
-	return rotatePoint(x, y, centerX, centerY, rotation);
+	return rotatedCenter;
 }
 
 export const centerToCorner = ({

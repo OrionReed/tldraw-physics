@@ -132,7 +132,7 @@ export class PhysicsWorld {
   createGroup(group: TLGroupShape) {
     // create rigidbody for group
     const rigidbody = this.createRigidbody(group);
-    const rbShapeGeo = this.editor.getShapeGeometry(group);
+    const rigidbodyGeometry = this.editor.getShapeGeometry(group);
 
     this.editor.getSortedChildIdsForParent(group.id).forEach((childId) => {
       // create collider for each
@@ -140,7 +140,7 @@ export class PhysicsWorld {
       if (!child) return;
       const isRb = "color" in child.props && isRigidbody(child?.props.color);
       if (isRb) {
-        this.createCollider(child, rigidbody, rbShapeGeo);
+        this.createCollider(child, rigidbody, rigidbodyGeometry);
       } else {
         this.createCollider(child);
       }
@@ -151,7 +151,7 @@ export class PhysicsWorld {
     const drawnGeo = this.editor.getShapeGeometry(drawShape);
     const verts = drawnGeo.vertices;
     const isRb =
-      "color" in drawShape.props && isRigidbody(drawShape?.props.color);
+      "color" in drawShape.props && isRigidbody(drawShape.props.color);
     verts.forEach((point) => {
       if (isRb) this.createColliderAtPoint(point, drawShape, rigidbody);
       else this.createColliderAtPoint(point, drawShape);
@@ -309,7 +309,6 @@ export class PhysicsWorld {
     parentGeo: Geometry2d | null = null,
   ) {
     const dimensions = this.getShapeDimensions(shape);
-
     const centerPosition = cornerToCenter({
       x: shape.x,
       y: shape.y,
@@ -380,6 +379,7 @@ export function usePhysicsSimulation(editor: Editor, enabled: boolean) {
   useEffect(() => {
     if (enabled) {
       sim.current.start();
+      editor.selectNone();
       return () => sim.current.stop();
     }
   }, [enabled, sim]);
