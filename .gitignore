@@ -11,11 +11,16 @@ node_modules
 dist
 dist-ssr
 *.local
-.yarn/install-state.gz
+.vscode
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
