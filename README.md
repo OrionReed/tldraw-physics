@@ -23,7 +23,7 @@ yarn deploy
 3. Watch it go brrrrrrrrrr!
 4. Click "Physics" again to stop the simulation
 
-**Rules**
+#### Rules
 Supported shapes are Geo, Draw, Image and Video. Physical properties are determined by the shape's props:
 - Black: Static Collider
 - Grey: Zero gravity
@@ -33,10 +33,10 @@ Supported shapes are Geo, Draw, Image and Video. Physical properties are determi
 - All other colors: Normal rigidbody with gravity
 - No color (e.g. image or video): Static collider
 
-**Groups**
-You can group shapes to create compound rigidbodies. Physical properties will still work, so you can create shapes which are part ice and part rubber, for example.
+#### Groups
+You can group shapes to create compound rigidbodies. Physical properties are still per-shape, so you can create shapes which are part ice and part rubber, for example. The center of mass is calculated based on the shapes' positions and areas and assumes all shapes are the same density.
 
-**Notes and Gotchas**
+#### Notes and Gotchas
 - All geo shapes are treated as [convex hulls](https://en.wikipedia.org/wiki/Convex_hull)
 - Draw shapes use a very crude compound collider approach, where each vertex is turned into a sphere
 - There is no edge to the world, so rigidbodies will fall forever
