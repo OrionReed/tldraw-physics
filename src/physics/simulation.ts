@@ -1,8 +1,8 @@
 import RAPIER from "@dimforge/rapier2d";
-import { CHARACTER, GRAVITY, MATERIALS, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody } from "./config";
+import { CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody } from "./config";
 import { Editor, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, TLShapeId, VecLike } from "@tldraw/tldraw";
 import { useEffect, useRef } from "react";
-import { centerToCorner, convertVerticesToFloat32Array, cornerToCenter, getDisplacement } from "./utils";
+import { centerToCorner, convertVerticesToFloat32Array, cornerToCenter, getDisplacement } from "./math";
 
 type BodyWithShapeData = RAPIER.RigidBody & {
   userData: { id: TLShapeId; type: TLShape["type"]; w: number; h: number };
@@ -328,11 +328,11 @@ export class PhysicsWorld {
     const restitution =
       "color" in shape.props
         ? getRestitutionFromColor(shape.props.color)
-        : MATERIALS.defaultRestitution;
+        : MATERIAL.defaultRestitution;
     const friction =
       "color" in shape.props
         ? getFrictionFromColor(shape.props.color)
-        : MATERIALS.defaultFriction;
+        : MATERIAL.defaultFriction;
 
     let colliderDesc: RAPIER.ColliderDesc | null = null;
 
@@ -380,16 +380,22 @@ export class PhysicsWorld {
   }
 }
 
-export const physicsSim = (editor: Editor, enabled: boolean) => {
+export function usePhysicsSimulation(editor: Editor, enabled: boolean) {
   const sim = useRef<PhysicsWorld>(new PhysicsWorld(editor));
+
   useEffect(() => {
     if (enabled) {
       sim.current.start();
-      return;
+      return () => sim.current.stop();
     }
-    sim.current.stop();
-  }, [enabled]);
+  }, [enabled, sim]);
+
   useEffect(() => {
     sim.current.setEditor(editor);
-  }, [editor]);
+  }, [editor, sim]);
+
+  // Return any values or functions that the UI components might need
+  return {
+    addShapes: (shapes: TLDrawShape[]) => sim.current.addShapes(shapes),
+  };
 }

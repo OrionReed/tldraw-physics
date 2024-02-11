@@ -5,7 +5,6 @@ export const DEFAULT_FRICTION = 0.1;
 export function isRigidbody(color: string) {
 	return !color || color === "black" ? false : true;
 }
-
 export function getGravityFromColor(color: string) {
 	return color === 'grey' ? 0 : 1
 }
@@ -15,7 +14,7 @@ export function getRestitutionFromColor(color: string) {
 export function getFrictionFromColor(color: string) {
 	return color === "blue" ? 0.1 : 0.8;
 }
-export const MATERIALS = {
+export const MATERIAL = {
 	defaultRestitution: 0,
 	defaultFriction: 0.1,
 };
@@ -29,7 +28,6 @@ export const CHARACTER = {
 	autostepHeight: 5,
 	autostepMaxClimbAngle: 1,
 	snapToGroundDistance: 3,
-	// movement
 	maxMoveSpeedX: 100,
 	moveAcceleration: 600,
 	moveDeceleration: 500,
