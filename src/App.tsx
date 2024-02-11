@@ -33,7 +33,7 @@ export default function Canvas() {
 const NameEditor = track(() => {
 	const editor = useEditor();
 
-	const { color, name } = editor.user;
+	const { color, name } = editor.user.getUserPreferences();
 
 	return (
 		<div

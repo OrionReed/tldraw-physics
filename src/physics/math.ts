@@ -1,4 +1,4 @@
-import { Geometry2d, Vec2d, VecLike } from "@tldraw/tldraw";
+import { Geometry2d, Vec, VecLike } from "@tldraw/tldraw";
 
 type ShapeTransform = {
 	x: number;
@@ -78,7 +78,7 @@ export const getDisplacement = (
 }
 
 export const convertVerticesToFloat32Array = (
-	vertices: Vec2d[],
+	vertices: Vec[],
 	width: number,
 	height: number,
 ) => {

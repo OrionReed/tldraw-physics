@@ -1865,15 +1865,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tldraw/editor@npm:2.0.0-alpha.18":
-  version: 2.0.0-alpha.18
-  resolution: "@tldraw/editor@npm:2.0.0-alpha.18"
+"@tldraw/editor@npm:2.0.0-beta.2":
+  version: 2.0.0-beta.2
+  resolution: "@tldraw/editor@npm:2.0.0-beta.2"
   dependencies:
-    "@tldraw/state": "npm:2.0.0-alpha.18"
-    "@tldraw/store": "npm:2.0.0-alpha.18"
-    "@tldraw/tlschema": "npm:2.0.0-alpha.18"
-    "@tldraw/utils": "npm:2.0.0-alpha.18"
-    "@tldraw/validate": "npm:2.0.0-alpha.18"
+    "@tldraw/state": "npm:2.0.0-beta.2"
+    "@tldraw/store": "npm:2.0.0-beta.2"
+    "@tldraw/tlschema": "npm:2.0.0-beta.2"
+    "@tldraw/utils": "npm:2.0.0-beta.2"
+    "@tldraw/validate": "npm:2.0.0-beta.2"
     "@types/core-js": "npm:^2.5.5"
     "@use-gesture/react": "npm:^10.2.27"
     classnames: "npm:^2.3.2"
@@ -1887,34 +1887,34 @@ __metadata:
   peerDependencies:
     react: ^18
     react-dom: ^18
-  checksum: 0bcaea1698a878b4c7b5fc9338ea1fb587bab135404f02bfc1e5a208cb396f827d78a2f8736ee0df484e8c30239e81b418dd57c578e3bebaa96bcce6df25edb8
+  checksum: a20bfb53af3732aa9ca160c655cce8c47727b0048e2ef1cd90698c03e3fbde25d7ceab11d3da7f18200c07e53f21dcf176b08d7a3d41c855317886e4a5eb5705
   languageName: node
   linkType: hard
 
-"@tldraw/state@npm:2.0.0-alpha.18":
-  version: 2.0.0-alpha.18
-  resolution: "@tldraw/state@npm:2.0.0-alpha.18"
+"@tldraw/state@npm:2.0.0-beta.2":
+  version: 2.0.0-beta.2
+  resolution: "@tldraw/state@npm:2.0.0-beta.2"
   peerDependencies:
     react: ^18
-  checksum: 5ea428876005b5d7653a802ba979db94ffb31569e94e807b848aa7ad5340a907dd401f6195a0a5e748c0be498a046d13c6f5bdbec11896619d3936e7e99c2207
+  checksum: c7372da17848dc35c8cba825e9e4f97badc765a5cefa58e3a74888d815a9bbd567ebb9e7e4cc5a58a175d9203ab32bbe705cfeae15dd433d769fc1d264ec135b
   languageName: node
   linkType: hard
 
-"@tldraw/store@npm:2.0.0-alpha.18":
-  version: 2.0.0-alpha.18
-  resolution: "@tldraw/store@npm:2.0.0-alpha.18"
+"@tldraw/store@npm:2.0.0-beta.2":
+  version: 2.0.0-beta.2
+  resolution: "@tldraw/store@npm:2.0.0-beta.2"
   dependencies:
-    "@tldraw/state": "npm:2.0.0-alpha.18"
-    "@tldraw/utils": "npm:2.0.0-alpha.18"
+    "@tldraw/state": "npm:2.0.0-beta.2"
+    "@tldraw/utils": "npm:2.0.0-beta.2"
     lodash.isequal: "npm:^4.5.0"
     nanoid: "npm:4.0.2"
-  checksum: 867d43ef92cdc99e12cdff1a47625a0e35a7f9b3e5ae75a569047a234a1c0f695c5d4585dbade3365e8aeacfdb6d1b2abe579ece05bc1dbe13c72a83abd10772
+  checksum: f44798108155088d12d4df989ce830874cf4e38046aa3176361d05f61362d681dc55cc342b48aa20f0b82805e4fac0ffea6c44ebbdf56a3ee8ca68c41876a766
   languageName: node
   linkType: hard
 
-"@tldraw/tldraw@npm:2.0.0-alpha.18":
-  version: 2.0.0-alpha.18
-  resolution: "@tldraw/tldraw@npm:2.0.0-alpha.18"
+"@tldraw/tldraw@npm:2.0.0-beta.2":
+  version: 2.0.0-beta.2
+  resolution: "@tldraw/tldraw@npm:2.0.0-beta.2"
   dependencies:
     "@radix-ui/react-alert-dialog": "npm:^1.0.0"
     "@radix-ui/react-context-menu": "npm:^2.1.5"
@@ -1924,44 +1924,45 @@ __metadata:
     "@radix-ui/react-select": "npm:^1.2.0"
     "@radix-ui/react-slider": "npm:^1.1.0"
     "@radix-ui/react-toast": "npm:^1.1.1"
-    "@tldraw/editor": "npm:2.0.0-alpha.18"
+    "@tldraw/editor": "npm:2.0.0-beta.2"
     canvas-size: "npm:^1.2.6"
     classnames: "npm:^2.3.2"
+    downscale: "npm:^1.0.6"
     hotkeys-js: "npm:^3.11.2"
     lz-string: "npm:^1.4.4"
   peerDependencies:
     react: ^18
     react-dom: ^18
-  checksum: a2ad59de964f934239253abd162fb0cee23ab26e0659003d3eb36eb77d5c876ba45430dd4f06c226d7fbd6c7bb7d72005396731fdbc013bda17b4c580e59a510
+  checksum: 8c4884df8bfa71b0b803bea2c18b45c07ebf5fde8816397629ae173ec404a469e908f0e9923a26436974f375c057fbeb8298acaaf10b4a980ab492c9a246be40
   languageName: node
   linkType: hard
 
-"@tldraw/tlschema@npm:2.0.0-alpha.18":
-  version: 2.0.0-alpha.18
-  resolution: "@tldraw/tlschema@npm:2.0.0-alpha.18"
+"@tldraw/tlschema@npm:2.0.0-beta.2":
+  version: 2.0.0-beta.2
+  resolution: "@tldraw/tlschema@npm:2.0.0-beta.2"
   dependencies:
-    "@tldraw/state": "npm:2.0.0-alpha.18"
-    "@tldraw/store": "npm:2.0.0-alpha.18"
-    "@tldraw/utils": "npm:2.0.0-alpha.18"
-    "@tldraw/validate": "npm:2.0.0-alpha.18"
+    "@tldraw/state": "npm:2.0.0-beta.2"
+    "@tldraw/store": "npm:2.0.0-beta.2"
+    "@tldraw/utils": "npm:2.0.0-beta.2"
+    "@tldraw/validate": "npm:2.0.0-beta.2"
     nanoid: "npm:4.0.2"
-  checksum: bbfd905b2ba949e97b9fd9331a62eceb5f8e9cbddf4eb00d3f46c43f3908891649c69394059e7ada32edd00e5daad12c84f023da42975d78374bcb3255859ffe
+  checksum: ffcefb31aa660573335fa5310af92d46b62eec4a042a16415d3dff1cb29a3fff76d6b84c0d580cb0d39751f5e58cc458f6733982c2ce171cff4f2f20e9857bf5
   languageName: node
   linkType: hard
 
-"@tldraw/utils@npm:2.0.0-alpha.18":
-  version: 2.0.0-alpha.18
-  resolution: "@tldraw/utils@npm:2.0.0-alpha.18"
-  checksum: 05cb21661a101c99b1950e938788d0bed17ae57d1deeb39ab6192ea35fa06c90d92cb5e4a845aec74516eae322f00e0dc474b338024a366232f26ac163ccd095
+"@tldraw/utils@npm:2.0.0-beta.2":
+  version: 2.0.0-beta.2
+  resolution: "@tldraw/utils@npm:2.0.0-beta.2"
+  checksum: 7f540208a797fe3550fe27f4ee92d5a7f7cbc404d0de5db65cd6ef755eeab23376db0a1528db3235ef12e9e5021a6ba42d9aa271a4981c5e295700c0b627c3c7
   languageName: node
   linkType: hard
 
-"@tldraw/validate@npm:2.0.0-alpha.18":
-  version: 2.0.0-alpha.18
-  resolution: "@tldraw/validate@npm:2.0.0-alpha.18"
+"@tldraw/validate@npm:2.0.0-beta.2":
+  version: 2.0.0-beta.2
+  resolution: "@tldraw/validate@npm:2.0.0-beta.2"
   dependencies:
-    "@tldraw/utils": "npm:2.0.0-alpha.18"
-  checksum: 8b24540708a38e3b318c3b160e9be8b9624d98df5a7d74428fae77c55eb0ad1358ae569bd924adaabf67803dffd9fbaa02c6780f054dc00259e773bd8b0b95df
+    "@tldraw/utils": "npm:2.0.0-beta.2"
+  checksum: ab319e18aba07ad982d4f0ac41922fbd73b304047f163394410f6a9f330bfeb8495359f72aba11cc3b3090aef832f9a1c98c64d95c897d444cc9fe6d025537a3
   languageName: node
   linkType: hard
 
@@ -2430,53 +2431,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-dispatch@npm:1, d3-dispatch@npm:^1.0.3":
-  version: 1.0.6
-  resolution: "d3-dispatch@npm:1.0.6"
-  checksum: 6302554a019e2d75d4e3dc7e8757a00b4b12ac2a2952bccc66e4478ccd170f425e2b6a9443118d5feadcd2439f33582b63c7925e832104ff1978cadea2a30dc2
-  languageName: node
-  linkType: hard
-
-"d3-drag@npm:^1.0.4":
-  version: 1.2.5
-  resolution: "d3-drag@npm:1.2.5"
-  dependencies:
-    d3-dispatch: "npm:1"
-    d3-selection: "npm:1"
-  checksum: 749cbeaab1867a10086c90467218365ab1967645878463074a63383d9de77fe8b6a7ebe6c5be8fd4e257575db87c9b99a2d76b4d3ebb8b937f3523414fbc9c2b
-  languageName: node
-  linkType: hard
-
-"d3-path@npm:1":
-  version: 1.0.9
-  resolution: "d3-path@npm:1.0.9"
-  checksum: e35e84df5abc18091f585725b8235e1fa97efc287571585427d3a3597301e6c506dea56b11dfb3c06ca5858b3eb7f02c1bf4f6a716aa9eade01c41b92d497eb5
-  languageName: node
-  linkType: hard
-
-"d3-selection@npm:1":
-  version: 1.4.2
-  resolution: "d3-selection@npm:1.4.2"
-  checksum: e755b6b62d794d0b968cc6264f37109e425de0d9fd306ce94414b07e46a2c6830d21c1fe0821a660d07e82069b6fe3b67da1b3b909e8f6af8f16f020cd25cae0
-  languageName: node
-  linkType: hard
-
-"d3-shape@npm:^1.3.5":
-  version: 1.3.7
-  resolution: "d3-shape@npm:1.3.7"
-  dependencies:
-    d3-path: "npm:1"
-  checksum: 548057ce59959815decb449f15632b08e2a1bdce208f9a37b5f98ec7629dda986c2356bc7582308405ce68aedae7d47b324df41507404df42afaf352907577ae
-  languageName: node
-  linkType: hard
-
-"d3-timer@npm:^1.0.5":
-  version: 1.0.10
-  resolution: "d3-timer@npm:1.0.10"
-  checksum: 7e77030a206861e4e626754c689795d43f036fb07a7f8ca6360eb8b7cbe6f52bf43c9c4297ae9a9a906e4de594212702f83c0cde23d4e20d8689a4211e438155
-  languageName: node
-  linkType: hard
-
 "data-uri-to-buffer@npm:^2.0.0":
   version: 2.0.2
   resolution: "data-uri-to-buffer@npm:2.0.2"
@@ -2519,6 +2473,13 @@ __metadata:
   version: 1.1.0
   resolution: "detect-node-es@npm:1.1.0"
   checksum: e562f00de23f10c27d7119e1af0e7388407eb4b06596a25f6d79a360094a109ff285de317f02b090faae093d314cf6e73ac3214f8a5bb3a0def5bece94557fbe
+  languageName: node
+  linkType: hard
+
+"downscale@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "downscale@npm:1.0.6"
+  checksum: 35b7028542587b4cfc0d7fac6f657da8b0a4f59107a7215a028ff361e103a4f51ba0e079578dbde6beaae59ec5068ad9e6e6c2adca3e39c86df101e2c2a6f95b
   languageName: node
   linkType: hard
 
@@ -4162,7 +4123,7 @@ __metadata:
   dependencies:
     "@biomejs/biome": "npm:1.4.1"
     "@dimforge/rapier2d": "npm:latest"
-    "@tldraw/tldraw": "npm:2.0.0-alpha.18"
+    "@tldraw/tldraw": "npm:2.0.0-beta.2"
     "@types/react": "npm:^18.2.15"
     "@types/react-dom": "npm:^18.2.7"
     "@vitejs/plugin-react": "npm:^4.0.3"
@@ -4174,7 +4135,6 @@ __metadata:
     vite: "npm:^4.4.5"
     vite-plugin-top-level-await: "npm:^1.3.1"
     vite-plugin-wasm: "npm:^3.2.2"
-    webcola: "npm:latest"
     y-partykit: "npm:^0.0.7"
     y-utility: "npm:^0.1.3"
     y-websocket: "npm:^1.5.0"
@@ -4379,18 +4339,6 @@ __metadata:
   bin:
     vite: bin/vite.js
   checksum: 4032fbbd67ae74d2d2f748218bb97c5b0005283ebc6cbb00374e55d418fe8852fdee20e25119cd6e2f1dd90c8c9bdb899a1dcd4fede12011befad2dbde9c0c56
-  languageName: node
-  linkType: hard
-
-"webcola@npm:latest":
-  version: 3.4.0
-  resolution: "webcola@npm:3.4.0"
-  dependencies:
-    d3-dispatch: "npm:^1.0.3"
-    d3-drag: "npm:^1.0.4"
-    d3-shape: "npm:^1.3.5"
-    d3-timer: "npm:^1.0.5"
-  checksum: 509ebbe30f69465ad0df1baf041cebf9ddab999b1edc3c30ab4fbb1a3b0a0cdbb5a759aeb55e42c3a01da3758d3db4b19bd43368c3b1fb959526beabf03a0c6e
   languageName: node
   linkType: hard
 

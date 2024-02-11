@@ -37,7 +37,7 @@ export const PhysicsUI = track(() => {
 					type="button"
 					className="custom-button"
 					title="Add to physics simulation"
-					onClick={() => addShapes(editor.selectedShapes)}
+					onClick={() => addShapes(editor.getSelectedShapes())}
 				>
 					+
 				</button>
