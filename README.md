@@ -1,5 +1,5 @@
 # tldraw physics
-This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses [Rapier](https://rapier.rs), a rust-based physics engine compiled to [WASM](https://webassembly.org)
+This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses [Rapier](https://rapier.rs), a rust-based physics engine compiled to [WASM](https://webassembly.org). Try it out in your browser **[here](https://orionreed.github.io/tldraw-physics/)**
 
 https://github.com/OrionReed/tldraw-physics/assets/16704290/0967881e-1faa-46fb-8204-7b99a5a3556b
 
@@ -15,7 +15,7 @@ Multiplayer is supported* using yjs and partykit. To deploy:
 yarn deploy
 ```
 
-*Note that this is a _terrible_ way to do multiplayer and there is no handling for multiple clients with overlapping physics sims. It's essentially the same as a single client manually moving many shapes each frame, but it sure is fun! If you find it's stalling on "Connecting..." you can disable multipayer by commenting out line 22 in App.tsx (store={store}). PRs for multiplayer fixes are **very** welcome!
+*Note that this is a _terrible_ way to do multiplayer and there is no handling for multiple clients with overlapping physics sims. It's essentially the same as a single client manually moving many shapes each frame, but it sure is fun! I have "disabled" multiplayer by default, you can uncomment line 25 of App.tsx (`// store={store()}`) to mess around. PRs for multiplayer fixes are **very** welcome!
 
 ## Usage
 1. Select shapes you wish to include in the physics simulation
