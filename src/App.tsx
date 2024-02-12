@@ -20,7 +20,7 @@ export default function Canvas() {
 		<div className="tldraw__editor">
 			<Tldraw
 				autoFocus
-				store={store}
+				// store={store}
 				shareZone={<NameEditor />}
 				overrides={uiOverrides}
 			>
