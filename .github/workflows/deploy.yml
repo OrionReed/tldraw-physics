@@ -10,6 +10,12 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
 
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.0.2 --activate
+
+
       - name: Install and Build 🔧 
         run: |
           yarn install
