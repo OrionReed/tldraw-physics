@@ -23,7 +23,7 @@ jobs:
           corepack enable
           corepack prepare yarn@4.0.2 --activate
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: yarn install
 
       - name: Build
