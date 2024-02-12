@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"HOST=localhost PORT=1234 npx y-websocket\" --kill-others",
     "dev:win": "concurrently \"vite\" \"set HOST=localhost&& set PORT=1234 && npx y-websocket\" --kill-others",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base=./",
     "preview": "vite preview",
     "party": "yarn build && npx partykit deploy",
     "lint": "yarn dlx @biomejs/biome check --apply src",
