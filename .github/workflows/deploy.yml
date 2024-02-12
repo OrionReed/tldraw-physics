@@ -30,13 +30,14 @@ jobs:
       - name: Build
         run: yarn run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v2
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+  
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: build-artifacts
-          path: ./dist
+          path: "./dist"
 
-  # Deploy job
   deploy:
     needs: build
     permissions:
@@ -53,4 +54,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
+        uses: actions/deploy-pages@v4
