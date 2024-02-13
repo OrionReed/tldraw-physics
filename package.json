@@ -9,10 +9,8 @@
     "dev:win": "concurrently \"vite\" \"set HOST=localhost&& set PORT=1234 && npx y-websocket\" --kill-others",
     "build": "tsc && vite build --base=./",
     "preview": "vite preview",
-    "party": "yarn build && npx partykit deploy",
     "lint": "yarn dlx @biomejs/biome check --apply src",
-    "predeploy": "yarn run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "yarn build && npx partykit deploy"
   },
   "dependencies": {
     "@dimforge/rapier2d": "latest",
