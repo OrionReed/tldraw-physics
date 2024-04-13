@@ -31,6 +31,7 @@ export class PhysicsCollection extends BaseCollection {
 
   override onAdd(shapes: TLShape[]) {
     for (const shape of shapes) {
+      if (this.colliderLookup.has(shape.id)) continue;
       if ('color' in shape.props && shape.props.color === "violet") {
         this.createCharacterObject(shape as TLGeoShape);
         continue;
