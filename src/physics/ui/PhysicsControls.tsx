@@ -1,11 +1,12 @@
 import { track, useEditor } from "@tldraw/tldraw";
 import { useEffect, useState } from "react";
-import { usePhysicsSimulation } from "../simulation";
 import "../../css/physics-ui.css";
+import { useCollection } from "../../../tldraw-collections/src";
 
 export const SimControls = track(() => {
 	const editor = useEditor();
 	const [physicsEnabled, setPhysics] = useState(false);
+	const physicsCollection = useCollection('physics')
 
 	useEffect(() => {
 		const togglePhysics = () => {
@@ -19,7 +20,7 @@ export const SimControls = track(() => {
 		};
 	}, []);
 
-	const { addShapes } = usePhysicsSimulation(editor, physicsEnabled);
+	// const { addShapes } = usePhysicsSimulation(editor, physicsEnabled);
 
 	return (
 		<div className="custom-layout">
@@ -37,7 +38,7 @@ export const SimControls = track(() => {
 					type="button"
 					className="custom-button"
 					title="Add to physics simulation"
-					onClick={() => addShapes(editor.getSelectedShapes())}
+					onClick={() => physicsCollection.add(editor.getSelectedShapes())}
 				>
 					+
 				</button>

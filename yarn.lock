@@ -417,7 +417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dimforge/rapier2d@npm:latest":
+"@dimforge/rapier2d@npm:^0.11.2":
   version: 0.11.2
   resolution: "@dimforge/rapier2d@npm:0.11.2"
   checksum: 5f7780ab7dcfdb1019ba91e896d2cf9fe0f65cb45dc7160e718ee90218f03ad985c859d70da04c4a5f9436fe08d9e581c9c2dcabb0ec9f1f9c6ba53a4c913bf0
@@ -4438,7 +4438,7 @@ __metadata:
   resolution: "tldraw-physics@workspace:."
   dependencies:
     "@biomejs/biome": "npm:1.4.1"
-    "@dimforge/rapier2d": "npm:latest"
+    "@dimforge/rapier2d": "npm:^0.11.2"
     "@tldraw/tldraw": "npm:2.0.0-beta.2"
     "@types/gh-pages": "npm:^6"
     "@types/react": "npm:^18.2.15"

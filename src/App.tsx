@@ -1,8 +1,13 @@
-import { Tldraw, track, useEditor } from "@tldraw/tldraw";
+import { Editor, Tldraw, track, useEditor } from "@tldraw/tldraw";
 import "@tldraw/tldraw/tldraw.css";
 import { SimControls } from "./physics/ui/PhysicsControls";
 import { useYjsStore } from "./useYjsStore";
 import { uiOverrides } from "./physics/ui/overrides";
+import { CollectionProvider } from "../tldraw-collections/src";
+import { PhysicsCollection } from "./PhysicsCollection";
+import { useState } from "react";
+
+const collections = [PhysicsCollection]
 
 const store = () => {
 	const hostUrl = import.meta.env.DEV
@@ -17,6 +22,7 @@ const store = () => {
 }
 
 export default function Canvas() {
+	const [editor, setEditor] = useState<Editor | null>(null)
 
 	return (
 		<div className="tldraw__editor">
@@ -25,8 +31,13 @@ export default function Canvas() {
 				// store={store()}
 				shareZone={<NameEditor />}
 				overrides={uiOverrides}
+				onMount={setEditor}
 			>
-				<SimControls />
+				{editor && (
+					<CollectionProvider editor={editor} collections={collections}>
+						<SimControls />
+					</CollectionProvider>
+				)}
 			</Tldraw>
 		</div>
 	);
