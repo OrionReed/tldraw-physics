@@ -17,16 +17,11 @@ export class PhysicsCollection extends BaseCollection {
   private world: RAPIER.World;
   private rigidbodyLookup: Map<TLShapeId, RAPIER.RigidBody>;
   private colliderLookup: Map<TLShapeId, RAPIER.Collider>;
-  private characterLookup: Map<TLShapeId, RAPIER.KinematicCharacterController>;
+  private characterLookup: Map<TLShapeId, { controller: RAPIER.KinematicCharacterController, id: TLShapeId }>;
   private animFrame = -1; // Store the animation frame id
-  private character: {
-    rigidbody: RAPIER.RigidBody | null;
-    collider: RAPIER.Collider | null;
-  };
 
   constructor(editor: Editor) {
     super(editor)
-    this.character = { rigidbody: null, collider: null }
     this.world = new RAPIER.World(GRAVITY)
     this.rigidbodyLookup = new Map()
     this.colliderLookup = new Map()
@@ -62,15 +57,21 @@ export class PhysicsCollection extends BaseCollection {
     for (const shape of shapes) {
       if (this.rigidbodyLookup.has(shape.id)) {
         const rb = this.rigidbodyLookup.get(shape.id);
-        rb && this.world.removeRigidBody(rb);
+        if (!rb) continue;
+        this.world.removeRigidBody(rb);
+        this.rigidbodyLookup.delete(shape.id);
       }
       if (this.colliderLookup.has(shape.id)) {
         const col = this.colliderLookup.get(shape.id);
-        col && this.world.removeCollider(col, true);
+        if (!col) continue;
+        this.world.removeCollider(col, true);
+        this.colliderLookup.delete(shape.id);
       }
       if (this.characterLookup.has(shape.id)) {
         const char = this.characterLookup.get(shape.id);
-        char && this.world.removeCharacterController(char);
+        if (!char) continue;
+        this.world.removeCharacterController(char.controller);
+        this.characterLookup.delete(shape.id);
       }
     }
   }
@@ -124,7 +125,7 @@ export class PhysicsCollection extends BaseCollection {
       true,
     );
     char.enableSnapToGround(CHARACTER.snapToGroundDistance);
-    this.characterLookup.set(id, char);
+    this.characterLookup.set(id, { controller: char, id });
     return char;
   }
 
@@ -132,7 +133,7 @@ export class PhysicsCollection extends BaseCollection {
     if (shape.props.dash === "dashed") return; // Skip dashed shapes
     if (isRigidbody(shape.props.color)) {
       const gravity = getGravityFromColor(shape.props.color)
-      const rb = this.createDescRigidbody(shape, gravity);
+      const rb = this.createRigidbodyObject(shape, gravity);
       this.createColliderObject(shape, rb);
     } else {
       this.createColliderObject(shape);
@@ -161,23 +162,20 @@ export class PhysicsCollection extends BaseCollection {
     const rigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
       .setTranslation(initialPosition.x, initialPosition.y)
       .setAdditionalMass(CHARACTER.additionalMass);
-    const rb = this.addRigidbody(characterShape.id, rigidBodyDesc);
-    const col = this.addCollider(characterShape.id, colliderDesc, rb);
-    this.addCharacter(characterShape.id);
-    // Setup references so we can update character position in sim loop
-    this.character.rigidbody = rb;
-    this.character.collider = col;
-    rb.userData = {
+    rigidBodyDesc.userData = {
       id: characterShape.id,
       type: characterShape.type,
       w: characterShape.props.w,
       h: characterShape.props.h,
     };
+    const rb = this.addRigidbody(characterShape.id, rigidBodyDesc);
+    const col = this.addCollider(characterShape.id, colliderDesc, rb);
+    this.addCharacter(characterShape.id);
   }
 
   createGroupObject(group: TLGroupShape) {
     // create rigidbody for group
-    const rigidbody = this.createDescRigidbody(group);
+    const rigidbody = this.createRigidbodyObject(group);
     const rigidbodyGeometry = this.editor.getShapeGeometry(group);
 
     this.editor.getSortedChildIdsForParent(group.id).forEach((childId) => {
@@ -194,7 +192,7 @@ export class PhysicsCollection extends BaseCollection {
   }
 
   createCompoundLineObject(drawShape: TLDrawShape) {
-    const rigidbody = this.createDescRigidbody(drawShape);
+    const rigidbody = this.createRigidbodyObject(drawShape);
     const drawnGeo = this.editor.getShapeGeometry(drawShape);
     const verts = drawnGeo.vertices;
     const isRb =
@@ -205,11 +203,12 @@ export class PhysicsCollection extends BaseCollection {
     });
   }
 
-  private createDescRigidbody(
+  private createRigidbodyObject(
     shape: TLShape,
     gravity = 1,
   ): RAPIER.RigidBody {
-    const dimensions = this.getShapeDimensions(shape);
+    const shapeGeo = this.editor.getShapeGeometry(shape)
+    const dimensions = getShapeDimensions(shapeGeo);
     const centerPosition = cornerToCenter({
       x: shape.x,
       y: shape.y,
@@ -334,7 +333,6 @@ export class PhysicsCollection extends BaseCollection {
 
   updateRigidbodies() {
     this.world.bodies.forEach((rb) => {
-      if (rb === this.character?.rigidbody) return;
       if (!rb.userData) return;
       const body = rb as BodyWithShapeData;
       const position = body.translation();
@@ -366,11 +364,11 @@ export class PhysicsCollection extends BaseCollection {
       y: CHARACTER.gravityMultiplier * GRAVITY.y,
     }
 
-    this.world.characterControllers.forEach((char) => {
-      if (!this.character.rigidbody || !this.character.collider) return;
-      const charRigidbody = this.character.rigidbody as BodyWithShapeData;
-      const charCollider = this.character.collider;
-      const grounded = char.computedGrounded();
+    for (const char of this.characterLookup.values()) {
+      const charRigidbody = this.rigidbodyLookup.get(char.id) as BodyWithShapeData;
+      const charCollider = this.colliderLookup.get(char.id) as RAPIER.Collider;
+      const grounded = char.controller.computedGrounded();
+      // TODO: move this check so we can think about multiplayer physics control
       const isJumping = this.editor.inputs.keys.has("ArrowUp") && grounded;
       const velocity: VecLike = {
         x: charRigidbody.linvel().x,
@@ -384,11 +382,11 @@ export class PhysicsCollection extends BaseCollection {
         CHARACTER.moveDeceleration,
       );
 
-      char.computeColliderMovement(
-        charCollider as RAPIER.Collider, // The collider we would like to move.
+      char.controller.computeColliderMovement(
+        charCollider as RAPIER.Collider,
         new RAPIER.Vector2(displacement.x, displacement.y),
       );
-      const correctedDisplacement = char.computedMovement();
+      const correctedDisplacement = char.controller.computedMovement();
       const currentPos = charRigidbody.translation();
       const nextX = currentPos.x + correctedDisplacement.x;
       const nextY = currentPos.y + correctedDisplacement.y;
@@ -402,6 +400,6 @@ export class PhysicsCollection extends BaseCollection {
         x: nextX - w / 2,
         y: nextY - h / 2,
       });
-    });
+    };
   }
 }
