@@ -1,22 +1,23 @@
 import { BaseCollection } from '../../tldraw-collections/src';
 import RAPIER from "@dimforge/rapier2d";
-import { Editor, TLArrowShape, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, TLShapeId, VecLike } from "@tldraw/tldraw";
+import { Editor, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, TLShapeId, VecLike } from "@tldraw/tldraw";
 import {
   centerToCorner,
   convertVerticesToFloat32Array,
-  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody
+  shouldConvexify,
+  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody, getShapeDimensions
 } from "./utils";
-import { useEffect, useRef } from "react";
 
 type BodyWithShapeData = RAPIER.RigidBody & {
   userData: { id: TLShapeId; type: TLShape["type"]; w: number; h: number };
 };
-type RigidbodyLookup = { [key: TLShapeId]: RAPIER.RigidBody };
 
 export class PhysicsCollection extends BaseCollection {
   override id = 'physics';
   private world: RAPIER.World;
-  private rigidbodyLookup: RigidbodyLookup;
+  private rigidbodyLookup: Map<TLShapeId, RAPIER.RigidBody>;
+  private colliderLookup: Map<TLShapeId, RAPIER.Collider>;
+  private characterLookup: Map<TLShapeId, RAPIER.KinematicCharacterController>;
   private animFrame = -1; // Store the animation frame id
   private character: {
     rigidbody: RAPIER.RigidBody | null;
@@ -25,28 +26,61 @@ export class PhysicsCollection extends BaseCollection {
 
   constructor(editor: Editor) {
     super(editor)
-    this.world = new RAPIER.World(GRAVITY)
-    this.rigidbodyLookup = {}
     this.character = { rigidbody: null, collider: null }
-    // this.start()
+    this.world = new RAPIER.World(GRAVITY)
+    this.rigidbodyLookup = new Map()
+    this.colliderLookup = new Map()
+    this.characterLookup = new Map()
+    this.simStart()
   }
 
   override onAdd(shapes: TLShape[]) {
-    this.start()
+    for (const shape of shapes) {
+      if ('color' in shape.props && shape.props.color === "violet") {
+        this.createCharacterObject(shape as TLGeoShape);
+        continue;
+      }
+
+      switch (shape.type) {
+        case "geo":
+        case "image":
+        case "video":
+          this.createShape(shape as TLGeoShape);
+          break;
+        case "draw":
+          this.createCompoundLineObject(shape as TLDrawShape);
+          break;
+        case "group":
+          this.createGroupObject(shape as TLGroupShape);
+          break;
+        // Add cases for any new shape types here
+      }
+    }
   }
 
   override onRemove(shapes: TLShape[]) {
-
+    for (const shape of shapes) {
+      if (this.rigidbodyLookup.has(shape.id)) {
+        const rb = this.rigidbodyLookup.get(shape.id);
+        rb && this.world.removeRigidBody(rb);
+      }
+      if (this.colliderLookup.has(shape.id)) {
+        const col = this.colliderLookup.get(shape.id);
+        col && this.world.removeCollider(col, true);
+      }
+      if (this.characterLookup.has(shape.id)) {
+        const char = this.characterLookup.get(shape.id);
+        char && this.world.removeCharacterController(char);
+      }
+    }
   }
 
   override onShapeChange(prev: TLShape, next: TLShape) {
 
   }
 
-  public start() {
+  public simStart() {
     this.world = new RAPIER.World(GRAVITY);
-
-    this.addShapes(this.editor.getSelectedShapes());
 
     const simLoop = () => {
       this.world.step();
@@ -58,49 +92,54 @@ export class PhysicsCollection extends BaseCollection {
     return () => cancelAnimationFrame(this.animFrame);
   };
 
-  public stop() {
+  public simStop() {
     if (this.animFrame !== -1) {
       cancelAnimationFrame(this.animFrame);
       this.animFrame = -1;
     }
   }
 
-  public addShapes(shapes: TLShape[]) {
-    for (const shape of shapes) {
-      if ('color' in shape.props && shape.props.color === "violet") {
-        this.createCharacter(shape as TLGeoShape);
-        continue;
-      }
+  addCollider(id: TLShapeId, desc: RAPIER.ColliderDesc, parentRigidBody?: RAPIER.RigidBody): RAPIER.Collider {
+    const col = this.world.createCollider(desc, parentRigidBody);
+    col && this.colliderLookup.set(id, col);
+    return col;
+  }
 
-      switch (shape.type) {
-        case "geo":
-        case "image":
-        case "video":
-          this.createShape(shape as TLGeoShape);
-          break;
-        case "draw":
-          this.createCompoundLine(shape as TLDrawShape);
-          break;
-        case "group":
-          this.createGroup(shape as TLGroupShape);
-          break;
-        // Add cases for any new shape types here
-      }
-    }
+  addRigidbody(id: TLShapeId, desc: RAPIER.RigidBodyDesc) {
+    const rb = this.world.createRigidBody(desc);
+    rb && this.rigidbodyLookup.set(id, rb);
+    return rb;
+  }
+
+  addCharacter(id: TLShapeId): RAPIER.KinematicCharacterController {
+    const char = this.world.createCharacterController(0.1);
+    char.setUp(CHARACTER.up);
+    char.setMaxSlopeClimbAngle(CHARACTER.maxSlopeClimbAngle);
+    char.setSlideEnabled(CHARACTER.slideEnabled);
+    char.setMinSlopeSlideAngle(CHARACTER.minSlopeSlideAngle);
+    char.setApplyImpulsesToDynamicBodies(CHARACTER.applyImpulsesToDynamicBodies);
+    char.enableAutostep(
+      CHARACTER.autostepHeight,
+      CHARACTER.autostepMaxClimbAngle,
+      true,
+    );
+    char.enableSnapToGround(CHARACTER.snapToGroundDistance);
+    this.characterLookup.set(id, char);
+    return char;
   }
 
   createShape(shape: TLGeoShape | TLDrawShape) {
     if (shape.props.dash === "dashed") return; // Skip dashed shapes
     if (isRigidbody(shape.props.color)) {
       const gravity = getGravityFromColor(shape.props.color)
-      const rb = this.createRigidbody(shape, gravity);
-      this.createCollider(shape, rb);
+      const rb = this.createDescRigidbody(shape, gravity);
+      this.createColliderObject(shape, rb);
     } else {
-      this.createCollider(shape);
+      this.createColliderObject(shape);
     }
   }
 
-  createCharacter(characterShape: TLGeoShape) {
+  createCharacterObject(characterShape: TLGeoShape) {
     const initialPosition = cornerToCenter({
       x: characterShape.x,
       y: characterShape.y,
@@ -122,24 +161,13 @@ export class PhysicsCollection extends BaseCollection {
     const rigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
       .setTranslation(initialPosition.x, initialPosition.y)
       .setAdditionalMass(CHARACTER.additionalMass);
-    const charRigidbody = this.world.createRigidBody(rigidBodyDesc);
-    const charCollider = this.world.createCollider(colliderDesc, charRigidbody);
-    const char = this.world.createCharacterController(0.1);
-    char.setUp(CHARACTER.up);
-    char.setMaxSlopeClimbAngle(CHARACTER.maxSlopeClimbAngle);
-    char.setSlideEnabled(CHARACTER.slideEnabled);
-    char.setMinSlopeSlideAngle(CHARACTER.minSlopeSlideAngle);
-    char.setApplyImpulsesToDynamicBodies(CHARACTER.applyImpulsesToDynamicBodies);
-    char.enableAutostep(
-      CHARACTER.autostepHeight,
-      CHARACTER.autostepMaxClimbAngle,
-      true,
-    );
-    char.enableSnapToGround(CHARACTER.snapToGroundDistance);
+    const rb = this.addRigidbody(characterShape.id, rigidBodyDesc);
+    const col = this.addCollider(characterShape.id, colliderDesc, rb);
+    this.addCharacter(characterShape.id);
     // Setup references so we can update character position in sim loop
-    this.character.rigidbody = charRigidbody;
-    this.character.collider = charCollider;
-    charRigidbody.userData = {
+    this.character.rigidbody = rb;
+    this.character.collider = col;
+    rb.userData = {
       id: characterShape.id,
       type: characterShape.type,
       w: characterShape.props.w,
@@ -147,9 +175,9 @@ export class PhysicsCollection extends BaseCollection {
     };
   }
 
-  createGroup(group: TLGroupShape) {
+  createGroupObject(group: TLGroupShape) {
     // create rigidbody for group
-    const rigidbody = this.createRigidbody(group);
+    const rigidbody = this.createDescRigidbody(group);
     const rigidbodyGeometry = this.editor.getShapeGeometry(group);
 
     this.editor.getSortedChildIdsForParent(group.id).forEach((childId) => {
@@ -158,22 +186,150 @@ export class PhysicsCollection extends BaseCollection {
       if (!child) return;
       const isRb = "color" in child.props && isRigidbody(child?.props.color);
       if (isRb) {
-        this.createCollider(child, rigidbody, rigidbodyGeometry);
+        this.createColliderObject(child, rigidbody, rigidbodyGeometry);
       } else {
-        this.createCollider(child);
+        this.createColliderObject(child);
       }
     });
   }
-  createCompoundLine(drawShape: TLDrawShape) {
-    const rigidbody = this.createRigidbody(drawShape);
+
+  createCompoundLineObject(drawShape: TLDrawShape) {
+    const rigidbody = this.createDescRigidbody(drawShape);
     const drawnGeo = this.editor.getShapeGeometry(drawShape);
     const verts = drawnGeo.vertices;
     const isRb =
       "color" in drawShape.props && isRigidbody(drawShape.props.color);
     verts.forEach((point) => {
-      if (isRb) this.createColliderAtPoint(point, drawShape, rigidbody);
-      else this.createColliderAtPoint(point, drawShape);
+      if (isRb) this.createColliderRelativeToParentObject(point, drawShape, rigidbody);
+      else this.createColliderRelativeToParentObject(point, drawShape);
     });
+  }
+
+  private createDescRigidbody(
+    shape: TLShape,
+    gravity = 1,
+  ): RAPIER.RigidBody {
+    const dimensions = this.getShapeDimensions(shape);
+    const centerPosition = cornerToCenter({
+      x: shape.x,
+      y: shape.y,
+      width: dimensions.width,
+      height: dimensions.height,
+      rotation: shape.rotation,
+    });
+    const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(centerPosition.x, centerPosition.y)
+      .setRotation(shape.rotation)
+      .setGravityScale(gravity);
+    rigidBodyDesc.userData = {
+      id: shape.id,
+      type: shape.type,
+      w: dimensions.width,
+      h: dimensions.height,
+    };
+    const rigidbody = this.addRigidbody(shape.id, rigidBodyDesc);
+    return rigidbody;
+  }
+
+  private createColliderRelativeToParentObject(
+    point: VecLike,
+    relativeToParent: TLDrawShape,
+    parentRigidBody: RAPIER.RigidBody | null = null,
+  ) {
+    const radius = 5;
+    const parentGeo = this.editor.getShapeGeometry(relativeToParent);
+    const center = cornerToCenter({
+      x: point.x,
+      y: point.y,
+      width: radius,
+      height: radius,
+      rotation: 0,
+      parent: parentGeo,
+    });
+    let colliderDesc: RAPIER.ColliderDesc | null = null;
+    colliderDesc = RAPIER.ColliderDesc.ball(radius);
+
+    if (!colliderDesc) {
+      console.error("Failed to create collider description.");
+      return;
+    }
+
+    if (parentRigidBody) {
+      colliderDesc.setTranslation(center.x, center.y);
+      this.addCollider(relativeToParent.id, colliderDesc, parentRigidBody);
+    } else {
+      colliderDesc.setTranslation(
+        relativeToParent.x + center.x,
+        relativeToParent.y + center.y,
+      );
+      this.addCollider(relativeToParent.id, colliderDesc);
+    }
+  }
+  private createColliderObject(
+    shape: TLShape,
+    parentRigidBody: RAPIER.RigidBody | null = null,
+    parentGeo: Geometry2d | null = null,
+  ) {
+    const shapeGeo = this.editor.getShapeGeometry(shape);
+    const dimensions = getShapeDimensions(shapeGeo);
+    const centerPosition = cornerToCenter({
+      x: shape.x,
+      y: shape.y,
+      width: dimensions.width,
+      height: dimensions.height,
+      rotation: shape.rotation,
+      parent: parentGeo || undefined,
+    });
+
+    const restitution =
+      "color" in shape.props
+        ? getRestitutionFromColor(shape.props.color)
+        : MATERIAL.defaultRestitution;
+    const friction =
+      "color" in shape.props
+        ? getFrictionFromColor(shape.props.color)
+        : MATERIAL.defaultFriction;
+
+    let colliderDesc: RAPIER.ColliderDesc | null = null;
+
+    if (shouldConvexify(shape)) {
+      // Convert vertices for convex shapes
+      const vertices = shapeGeo.vertices;
+      const vec2Array = convertVerticesToFloat32Array(
+        vertices,
+        dimensions.width,
+        dimensions.height,
+      );
+      colliderDesc = RAPIER.ColliderDesc.convexHull(vec2Array);
+    } else {
+      // Cuboid for rectangle shapes
+      colliderDesc = RAPIER.ColliderDesc.cuboid(
+        dimensions.width / 2,
+        dimensions.height / 2,
+      );
+    }
+    if (!colliderDesc) {
+      console.error("Failed to create collider description.");
+      return;
+    }
+
+    colliderDesc
+      .setRestitution(restitution)
+      .setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Max)
+      .setFriction(friction)
+      .setFrictionCombineRule(RAPIER.CoefficientCombineRule.Min);
+    if (parentRigidBody) {
+      if (parentGeo) {
+        colliderDesc.setTranslation(centerPosition.x, centerPosition.y);
+        colliderDesc.setRotation(shape.rotation);
+      }
+      this.addCollider(shape.id, colliderDesc, parentRigidBody);
+    } else {
+      colliderDesc
+        .setTranslation(centerPosition.x, centerPosition.y)
+        .setRotation(shape.rotation);
+      this.addCollider(shape.id, colliderDesc);
+    }
   }
 
   updateRigidbodies() {
@@ -247,143 +403,5 @@ export class PhysicsCollection extends BaseCollection {
         y: nextY - h / 2,
       });
     });
-  }
-  private getShapeDimensions(
-    shape: TLShape,
-  ): { width: number; height: number } {
-    const geo = this.editor.getShapeGeometry(shape);
-    const width = geo.center.x * 2;
-    const height = geo.center.y * 2;
-    return { width, height };
-  }
-  private shouldConvexify(shape: TLShape): boolean {
-    return !(
-      shape.type === "geo" && (shape as TLGeoShape).props.geo === "rectangle"
-    );
-  }
-  private createRigidbody(
-    shape: TLShape,
-    gravity = 1,
-  ): RAPIER.RigidBody {
-    const dimensions = this.getShapeDimensions(shape);
-    const centerPosition = cornerToCenter({
-      x: shape.x,
-      y: shape.y,
-      width: dimensions.width,
-      height: dimensions.height,
-      rotation: shape.rotation,
-    });
-    const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(centerPosition.x, centerPosition.y)
-      .setRotation(shape.rotation)
-      .setGravityScale(gravity);
-    const rigidbody = this.world.createRigidBody(rigidBodyDesc);
-    this.rigidbodyLookup[shape.id] = rigidbody;
-    rigidbody.userData = {
-      id: shape.id,
-      type: shape.type,
-      w: dimensions.width,
-      h: dimensions.height,
-    };
-    return rigidbody;
-  }
-  private createColliderAtPoint(
-    point: VecLike,
-    relativeToParent: TLDrawShape,
-    parentRigidBody: RAPIER.RigidBody | null = null,
-  ) {
-    const radius = 5;
-    const parentGeo = this.editor.getShapeGeometry(relativeToParent);
-    const center = cornerToCenter({
-      x: point.x,
-      y: point.y,
-      width: radius,
-      height: radius,
-      rotation: 0,
-      parent: parentGeo,
-    });
-    let colliderDesc: RAPIER.ColliderDesc | null = null;
-    colliderDesc = RAPIER.ColliderDesc.ball(radius);
-
-    if (!colliderDesc) {
-      console.error("Failed to create collider description.");
-      return;
-    }
-
-    if (parentRigidBody) {
-      colliderDesc.setTranslation(center.x, center.y);
-      this.world.createCollider(colliderDesc, parentRigidBody);
-    } else {
-      colliderDesc.setTranslation(
-        relativeToParent.x + center.x,
-        relativeToParent.y + center.y,
-      );
-      this.world.createCollider(colliderDesc);
-    }
-  }
-  private createCollider(
-    shape: TLShape,
-    parentRigidBody: RAPIER.RigidBody | null = null,
-    parentGeo: Geometry2d | null = null,
-  ) {
-    const dimensions = this.getShapeDimensions(shape);
-    const centerPosition = cornerToCenter({
-      x: shape.x,
-      y: shape.y,
-      width: dimensions.width,
-      height: dimensions.height,
-      rotation: shape.rotation,
-      parent: parentGeo || undefined,
-    });
-
-    const restitution =
-      "color" in shape.props
-        ? getRestitutionFromColor(shape.props.color)
-        : MATERIAL.defaultRestitution;
-    const friction =
-      "color" in shape.props
-        ? getFrictionFromColor(shape.props.color)
-        : MATERIAL.defaultFriction;
-
-    let colliderDesc: RAPIER.ColliderDesc | null = null;
-
-    if (this.shouldConvexify(shape)) {
-      // Convert vertices for convex shapes
-      const vertices = this.editor.getShapeGeometry(shape).vertices;
-      const vec2Array = convertVerticesToFloat32Array(
-        vertices,
-        dimensions.width,
-        dimensions.height,
-      );
-      colliderDesc = RAPIER.ColliderDesc.convexHull(vec2Array);
-    } else {
-      // Cuboid for rectangle shapes
-      colliderDesc = RAPIER.ColliderDesc.cuboid(
-        dimensions.width / 2,
-        dimensions.height / 2,
-      );
-    }
-    if (!colliderDesc) {
-      console.error("Failed to create collider description.");
-      return;
-    }
-
-    colliderDesc
-      .setRestitution(restitution)
-      .setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Max)
-      .setFriction(friction)
-      .setFrictionCombineRule(RAPIER.CoefficientCombineRule.Min);
-    if (parentRigidBody) {
-      if (parentGeo) {
-        colliderDesc.setTranslation(centerPosition.x, centerPosition.y);
-        colliderDesc.setRotation(shape.rotation);
-      }
-      this.world.createCollider(colliderDesc, parentRigidBody);
-    } else {
-      colliderDesc
-        .setTranslation(centerPosition.x, centerPosition.y)
-        .setRotation(shape.rotation);
-      this.world.createCollider(colliderDesc);
-    }
   }
 }

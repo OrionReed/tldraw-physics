@@ -1,6 +1,6 @@
 import { Editor, Tldraw, track, useEditor } from "@tldraw/tldraw";
 import "@tldraw/tldraw/tldraw.css";
-import { SimControls } from "./physics/ui/PhysicsControls";
+import { PhysicsUi } from "./physics/ui/PhysicsUi";
 import { useYjsStore } from "./useYjsStore";
 import { uiOverrides } from "./physics/ui/overrides";
 import { CollectionProvider } from "../tldraw-collections/src";
@@ -32,10 +32,11 @@ export default function Canvas() {
 				shareZone={<NameEditor />}
 				overrides={uiOverrides}
 				onMount={setEditor}
+				persistenceKey="tldraw-physics"
 			>
 				{editor && (
 					<CollectionProvider editor={editor} collections={collections}>
-						<SimControls />
+						<PhysicsUi />
 					</CollectionProvider>
 				)}
 			</Tldraw>
