@@ -5,13 +5,10 @@ import {
   centerToCorner,
   convertVerticesToFloat32Array,
   shouldConvexify,
-  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody, getShapeDimensions
+  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody, SIM_BOUNDS
 } from "./utils";
 
-type RigidbodyUserData = RAPIER.RigidBody & {
-  userData: { id: TLShapeId; type: TLShape["type"]; w: number; h: number, rbType: RAPIER.RigidBodyType };
-};
-
+type RigidbodyUserData = RAPIER.RigidBody & { id: TLShapeId; type: TLShape["type"]; w: number; h: number, rbType: RAPIER.RigidBodyType };
 export class PhysicsCollection extends BaseCollection {
   override id = 'physics';
   private world: RAPIER.World;
@@ -34,21 +31,17 @@ export class PhysicsCollection extends BaseCollection {
       if (this.colliderLookup.has(shape.id)) continue;
       if ('color' in shape.props && shape.props.color === "violet") {
         this.createCharacterObject(shape as TLGeoShape);
-
       }
       else switch (shape.type) {
-        case "geo":
-        case "image":
-        case "video":
-          this.createShape(shape as TLGeoShape);
-          break;
         case "draw":
           this.createCompoundLineObject(shape as TLDrawShape);
           break;
         case "group":
           this.createGroupObject(shape as TLGroupShape);
           break;
-        // Add cases for any new shape types here
+        default:
+          this.createShape(shape);
+          break;
       }
     }
   }
@@ -77,16 +70,18 @@ export class PhysicsCollection extends BaseCollection {
   }
 
   override onShapeChange(prev: TLShape, next: TLShape) {
-
+    // @ts-ignore
+    if (prev.props.color !== next.props.color) {
+      // TODO: update properties n stuff i guess
+    }
   }
 
   public simStart() {
-    this.world = new RAPIER.World(GRAVITY);
-
     const simLoop = () => {
       this.world.step();
       this.updateCharacterControllers();
       this.updateRigidbodies();
+      this.updateSelected();
       this.animFrame = requestAnimationFrame(simLoop);
     };
     simLoop();
@@ -129,9 +124,9 @@ export class PhysicsCollection extends BaseCollection {
     return char;
   }
 
-  createShape(shape: TLGeoShape | TLDrawShape) {
-    if (shape.props.dash === "dashed") return; // Skip dashed shapes
-    if (isRigidbody(shape.props.color)) {
+  createShape(shape: TLShape) {
+    if ("dash" in shape.props && shape.props.dash === "dashed") return; // Skip dashed shapes
+    if ("color" in shape.props && isRigidbody(shape.props.color)) {
       const gravity = getGravityFromColor(shape.props.color)
       const rb = this.createRigidbodyObject(shape, gravity);
       this.createColliderObject(shape, rb);
@@ -208,13 +203,12 @@ export class PhysicsCollection extends BaseCollection {
     shape: TLShape,
     gravity = 1,
   ): RAPIER.RigidBody {
-    const shapeGeo = this.editor.getShapeGeometry(shape)
-    const dimensions = getShapeDimensions(shapeGeo);
+    const { w, h } = this.getShapeDimensionsOrBounds(shape);
     const centerPosition = cornerToCenter({
       x: shape.x,
       y: shape.y,
-      width: dimensions.width,
-      height: dimensions.height,
+      width: w,
+      height: h,
       rotation: shape.rotation,
     });
     const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
@@ -224,8 +218,8 @@ export class PhysicsCollection extends BaseCollection {
     rigidBodyDesc.userData = {
       id: shape.id,
       type: shape.type,
-      w: dimensions.width,
-      h: dimensions.height,
+      w: w,
+      h: h,
       rbType: RAPIER.RigidBodyType.Dynamic
     };
     const rigidbody = this.addRigidbody(shape.id, rigidBodyDesc);
@@ -271,13 +265,12 @@ export class PhysicsCollection extends BaseCollection {
     parentRigidBody: RAPIER.RigidBody | null = null,
     parentGeo: Geometry2d | null = null,
   ) {
-    const shapeGeo = this.editor.getShapeGeometry(shape);
-    const dimensions = getShapeDimensions(shapeGeo);
+    const { w, h } = this.getShapeDimensionsOrBounds(shape);
     const centerPosition = cornerToCenter({
       x: shape.x,
       y: shape.y,
-      width: dimensions.width,
-      height: dimensions.height,
+      width: w,
+      height: h,
       rotation: shape.rotation,
       parent: parentGeo || undefined,
     });
@@ -295,19 +288,12 @@ export class PhysicsCollection extends BaseCollection {
 
     if (shouldConvexify(shape)) {
       // Convert vertices for convex shapes
-      const vertices = shapeGeo.vertices;
-      const vec2Array = convertVerticesToFloat32Array(
-        vertices,
-        dimensions.width,
-        dimensions.height,
-      );
+      const vertices = this.editor.getShapeGeometry(shape).vertices;
+      const vec2Array = convertVerticesToFloat32Array(vertices, w, h,);
       colliderDesc = RAPIER.ColliderDesc.convexHull(vec2Array);
     } else {
       // Cuboid for rectangle shapes
-      colliderDesc = RAPIER.ColliderDesc.cuboid(
-        dimensions.width / 2,
-        dimensions.height / 2,
-      );
+      colliderDesc = RAPIER.ColliderDesc.cuboid(w / 2, h / 2,);
     }
     if (!colliderDesc) {
       console.error("Failed to create collider description.");
@@ -335,52 +321,64 @@ export class PhysicsCollection extends BaseCollection {
 
   updateRigidbodies() {
     // TODO: make this cheaper?
-    const selected = new Set(this.editor.getSelectedShapeIds());
     this.world.bodies.forEach((rb) => {
       if (!rb.userData) return;
-      const userData = rb.userData as { id: TLShapeId, w: number, h: number, rbType: RAPIER.RigidBodyType };
-      const id = userData.id;
+      const userData = rb.userData as RigidbodyUserData;
+      if (this.editor.getSelectedShapeIds().includes(userData.id)) return
 
-      if (selected.has(id)) {
-        const shape = this.editor.getShape(id);
-        console.log('shape selected');
-        if (!shape) throw new Error("Shape not found, should never get here");
-
-        const centerPos = cornerToCenter({
-          x: shape.x,
-          y: shape.y,
-          width: userData.w,
-          height: userData.h,
-          rotation: shape.rotation,
-        });
-
-        if (!rb.isKinematic()) rb.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased, true);
-        rb.setNextKinematicTranslation({ x: centerPos.x, y: centerPos.y });
-        rb.setNextKinematicRotation(shape.rotation);
-        return
-      }
       rb.setBodyType(userData.rbType, true);
-
-      const body = rb as RigidbodyUserData;
-      const position = body.translation();
-      const rotation = body.rotation();
+      const position = rb.translation();
+      const rotation = rb.rotation();
 
       const cornerPos = centerToCorner({
         x: position.x,
         y: position.y,
-        width: body.userData?.w,
-        height: body.userData?.h,
+        width: userData.w,
+        height: userData.h,
         rotation: rotation,
       });
 
       this.editor.updateShape({
-        id: body.userData?.id,
-        type: body.userData?.type,
+        id: userData.id,
+        type: userData.type,
         rotation: rotation,
         x: cornerPos.x,
         y: cornerPos.y,
       });
+      this.removeIfOutOfBounds(rb);
     });
+  }
+
+  updateSelected() {
+    for (const id of this.editor.getSelectedShapeIds()) {
+      const shape = this.editor.getShape(id);
+      const col = this.colliderLookup.get(id);
+      const rb = this.rigidbodyLookup.get(id);
+      if (!shape) throw new Error("Shape not found, should never get here");
+
+      const { w, h } = this.getShapeDimensionsOrBounds(shape);
+
+      const centerPos = cornerToCenter({
+        x: shape.x,
+        y: shape.y,
+        width: w,
+        height: h,
+        rotation: shape.rotation,
+      });
+
+      if (rb) {
+        if (!rb.isKinematic()) rb.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased, true);
+        // TODO: 
+        rb.setNextKinematicTranslation({ x: centerPos.x, y: centerPos.y });
+        rb.setNextKinematicRotation(shape.rotation);
+      }
+      else if (col) {
+        col.setTranslation({ x: centerPos.x, y: centerPos.y });
+        col.setRotation(shape.rotation);
+        col.setHalfExtents({ x: w / 2, y: h / 2 });
+        // TODO: update dimensions for all shapes
+      }
+    }
   }
 
   updateCharacterControllers() {
@@ -392,7 +390,9 @@ export class PhysicsCollection extends BaseCollection {
     }
 
     for (const char of this.characterLookup.values()) {
-      const charRigidbody = this.rigidbodyLookup.get(char.id) as RigidbodyUserData;
+      const charRigidbody = this.rigidbodyLookup.get(char.id);
+      if (!charRigidbody) continue;
+      const userData = charRigidbody.userData as RigidbodyUserData;
       const charCollider = this.colliderLookup.get(char.id) as RAPIER.Collider;
       const grounded = char.controller.computedGrounded();
       // TODO: move this check so we can think about multiplayer physics control
@@ -419,14 +419,46 @@ export class PhysicsCollection extends BaseCollection {
       const nextY = currentPos.y + correctedDisplacement.y;
       charRigidbody?.setNextKinematicTranslation({ x: nextX, y: nextY });
 
-      const w = charRigidbody.userData.w;
-      const h = charRigidbody.userData.h;
+      const w = userData.w;
+      const h = userData.h;
       this.editor.updateShape({
-        id: charRigidbody.userData.id,
-        type: charRigidbody.userData.type,
+        id: userData.id,
+        type: userData.type,
         x: nextX - w / 2,
         y: nextY - h / 2,
       });
     };
+  }
+
+  private getShapeDimensionsOrBounds = (
+    shape: TLShape,
+  ): { w: number; h: number } => {
+    let w;
+    let h;
+    if (shape.type === 'geo') {
+      const geoShape = shape as TLGeoShape;
+      w = geoShape.props.w;
+      h = geoShape.props.h;
+    } else {
+      const geo = this.editor.getShapeGeometry(shape);
+      w = geo.bounds.x;
+      h = geo.bounds.y;
+    }
+    return { w, h };
+  }
+
+  private removeIfOutOfBounds(body: RAPIER.RigidBody) {
+    console.log(body.translation().y);
+    if (body.translation().y > SIM_BOUNDS.y) {
+      for (let i = 0; i < body.numColliders() - 1; i++) {
+        const col = body.collider(i)
+        console.log(col.translation().y);
+        const userData = body.userData as RigidbodyUserData
+        const shape = this.editor.getShape(userData.id);
+        if (!shape) return;
+        this.remove([shape]);
+      }
+      this.world.removeRigidBody(body);
+    }
   }
 }

@@ -3,6 +3,7 @@ import { Geometry2d, TLGeoShape, TLShape, Vec, VecLike } from "@tldraw/tldraw";
 export const GRAVITY = { x: 0.0, y: 98 };
 export const DEFAULT_RESTITUTION = 0;
 export const DEFAULT_FRICTION = 0.1;
+export const SIM_BOUNDS = { x: 10000, y: 10000 };
 
 export function isRigidbody(color: string) {
 	return !color || color === "black" ? false : true;
@@ -136,12 +137,4 @@ export const shouldConvexify = (shape: TLShape): boolean => {
 	return !(
 		shape.type === "geo" && (shape as TLGeoShape).props.geo === "rectangle"
 	);
-}
-
-export const getShapeDimensions = (
-	geo: Geometry2d,
-): { width: number; height: number } => {
-	const width = geo.center.x * 2;
-	const height = geo.center.y * 2;
-	return { width, height };
 }
