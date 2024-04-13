@@ -5,7 +5,7 @@ import {
   centerToCorner,
   convertVerticesToFloat32Array,
   shouldConvexify,
-  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody, SIM_BOUNDS
+  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody
 } from "./utils";
 
 type RigidbodyUserData = RAPIER.RigidBody & { id: TLShapeId; type: TLShape["type"]; w: number; h: number, rbType: RAPIER.RigidBodyType };
