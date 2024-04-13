@@ -56,31 +56,33 @@ export const PhysicsUi = track(() => {
 	return (
 		<div className="custom-layout">
 			<div className="custom-toolbar">
-				<div>{size} shapes</div>
-				<button
-					type="button"
-					title="Add Selected"
-					className="custom-button"
-					onClick={handleAdd}
-				>
-					Add
-				</button>
-				<button
-					type="button"
-					title="Remove Selected"
-					className="custom-button"
-					onClick={handleRemove}
-				>
-					Remove
-				</button>
-				<button
-					type="button"
-					title="Highlight Collection"
-					className="custom-button"
-					onClick={handleHighlight}
-				>
-					🔦
-				</button>
+				<div>
+					<button
+						type="button"
+						title="Add Selected"
+						className="custom-button"
+						onClick={handleAdd}
+					>
+						Add
+					</button>
+					<button
+						type="button"
+						title="Remove Selected"
+						className="custom-button"
+						onClick={handleRemove}
+					>
+						Remove
+					</button>
+					<button
+						type="button"
+						title="Highlight Collection"
+						className="custom-button"
+						onClick={handleHighlight}
+					>
+						🔦
+					</button>
+				</div>
+				<span>{size} shapes</span>
 			</div>
 		</div>
 	);
