@@ -351,9 +351,9 @@ export class PhysicsCollection extends BaseCollection {
   updateSelected() {
     for (const id of this.editor.getSelectedShapeIds()) {
       const shape = this.editor.getShape(id);
+      if (!shape) continue
       const col = this.colliderLookup.get(id);
       const rb = this.rigidbodyLookup.get(id);
-      if (!shape) throw new Error("Shape not found, should never get here");
 
       const { w, h } = this.getShapeDimensionsOrBounds(shape);
 
