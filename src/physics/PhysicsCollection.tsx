@@ -8,8 +8,8 @@ import {
   cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody, getShapeDimensions
 } from "./utils";
 
-type BodyWithShapeData = RAPIER.RigidBody & {
-  userData: { id: TLShapeId; type: TLShape["type"]; w: number; h: number };
+type RigidbodyUserData = RAPIER.RigidBody & {
+  userData: { id: TLShapeId; type: TLShape["type"]; w: number; h: number, rbType: RAPIER.RigidBodyType };
 };
 
 export class PhysicsCollection extends BaseCollection {
@@ -34,10 +34,9 @@ export class PhysicsCollection extends BaseCollection {
       if (this.colliderLookup.has(shape.id)) continue;
       if ('color' in shape.props && shape.props.color === "violet") {
         this.createCharacterObject(shape as TLGeoShape);
-        continue;
-      }
 
-      switch (shape.type) {
+      }
+      else switch (shape.type) {
         case "geo":
         case "image":
         case "video":
@@ -168,7 +167,8 @@ export class PhysicsCollection extends BaseCollection {
       type: characterShape.type,
       w: characterShape.props.w,
       h: characterShape.props.h,
-    };
+      rbType: RAPIER.RigidBodyType.KinematicPositionBased,
+    }
     const rb = this.addRigidbody(characterShape.id, rigidBodyDesc);
     const col = this.addCollider(characterShape.id, colliderDesc, rb);
     this.addCharacter(characterShape.id);
@@ -226,6 +226,7 @@ export class PhysicsCollection extends BaseCollection {
       type: shape.type,
       w: dimensions.width,
       h: dimensions.height,
+      rbType: RAPIER.RigidBodyType.Dynamic
     };
     const rigidbody = this.addRigidbody(shape.id, rigidBodyDesc);
     return rigidbody;
@@ -333,9 +334,34 @@ export class PhysicsCollection extends BaseCollection {
   }
 
   updateRigidbodies() {
+    // TODO: make this cheaper?
+    const selected = new Set(this.editor.getSelectedShapeIds());
     this.world.bodies.forEach((rb) => {
       if (!rb.userData) return;
-      const body = rb as BodyWithShapeData;
+      const userData = rb.userData as { id: TLShapeId, w: number, h: number, rbType: RAPIER.RigidBodyType };
+      const id = userData.id;
+
+      if (selected.has(id)) {
+        const shape = this.editor.getShape(id);
+        console.log('shape selected');
+        if (!shape) throw new Error("Shape not found, should never get here");
+
+        const centerPos = cornerToCenter({
+          x: shape.x,
+          y: shape.y,
+          width: userData.w,
+          height: userData.h,
+          rotation: shape.rotation,
+        });
+
+        if (!rb.isKinematic()) rb.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased, true);
+        rb.setNextKinematicTranslation({ x: centerPos.x, y: centerPos.y });
+        rb.setNextKinematicRotation(shape.rotation);
+        return
+      }
+      rb.setBodyType(userData.rbType, true);
+
+      const body = rb as RigidbodyUserData;
       const position = body.translation();
       const rotation = body.rotation();
 
@@ -366,7 +392,7 @@ export class PhysicsCollection extends BaseCollection {
     }
 
     for (const char of this.characterLookup.values()) {
-      const charRigidbody = this.rigidbodyLookup.get(char.id) as BodyWithShapeData;
+      const charRigidbody = this.rigidbodyLookup.get(char.id) as RigidbodyUserData;
       const charCollider = this.colliderLookup.get(char.id) as RAPIER.Collider;
       const grounded = char.controller.computedGrounded();
       // TODO: move this check so we can think about multiplayer physics control
