@@ -345,7 +345,6 @@ export class PhysicsCollection extends BaseCollection {
         x: cornerPos.x,
         y: cornerPos.y,
       });
-      this.removeIfOutOfBounds(rb);
     });
   }
 
@@ -445,20 +444,5 @@ export class PhysicsCollection extends BaseCollection {
       h = geo.bounds.y;
     }
     return { w, h };
-  }
-
-  private removeIfOutOfBounds(body: RAPIER.RigidBody) {
-    console.log(body.translation().y);
-    if (body.translation().y > SIM_BOUNDS.y) {
-      for (let i = 0; i < body.numColliders() - 1; i++) {
-        const col = body.collider(i)
-        console.log(col.translation().y);
-        const userData = body.userData as RigidbodyUserData
-        const shape = this.editor.getShape(userData.id);
-        if (!shape) return;
-        this.remove([shape]);
-      }
-      this.world.removeRigidBody(body);
-    }
   }
 }
