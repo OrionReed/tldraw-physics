@@ -354,7 +354,6 @@ export class PhysicsCollection extends BaseCollection {
       if (!shape) continue
       const col = this.colliderLookup.get(id);
       const rb = this.rigidbodyLookup.get(id);
-
       const { w, h } = this.getShapeDimensionsOrBounds(shape);
 
       const centerPos = cornerToCenter({
@@ -365,13 +364,24 @@ export class PhysicsCollection extends BaseCollection {
         rotation: shape.rotation,
       });
 
-      if (rb) {
+      // TODO: update dimensions for all shapes
+      if (col && rb) {
+        const userData = rb.userData as RigidbodyUserData;
         if (!rb.isKinematic()) rb.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased, true);
-        // TODO: 
         rb.setNextKinematicTranslation({ x: centerPos.x, y: centerPos.y });
         rb.setNextKinematicRotation(shape.rotation);
+        col.setHalfExtents({ x: w / 2, y: h / 2 });
+        userData.w = w;
+        userData.h = h;
+        continue;
       }
-      else if (col) {
+      if (rb) {
+        if (!rb.isKinematic()) rb.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased, true);
+        rb.setNextKinematicTranslation({ x: centerPos.x, y: centerPos.y });
+        rb.setNextKinematicRotation(shape.rotation);
+        continue;
+      }
+      if (col) {
         col.setTranslation({ x: centerPos.x, y: centerPos.y });
         col.setRotation(shape.rotation);
         col.setHalfExtents({ x: w / 2, y: h / 2 });
