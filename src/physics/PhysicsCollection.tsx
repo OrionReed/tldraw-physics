@@ -1,8 +1,11 @@
-import { BaseCollection } from '../tldraw-collections/src';
+import { BaseCollection } from '../../tldraw-collections/src';
 import RAPIER from "@dimforge/rapier2d";
-import { CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody } from "./physics/config";
 import { Editor, TLArrowShape, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, TLShapeId, VecLike } from "@tldraw/tldraw";
-import { centerToCorner, convertVerticesToFloat32Array, cornerToCenter, getDisplacement } from "./physics/math";
+import {
+  centerToCorner,
+  convertVerticesToFloat32Array,
+  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody
+} from "./utils";
 import { useEffect, useRef } from "react";
 
 type BodyWithShapeData = RAPIER.RigidBody & {

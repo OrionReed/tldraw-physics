@@ -4,7 +4,7 @@ import { SimControls } from "./physics/ui/PhysicsControls";
 import { useYjsStore } from "./useYjsStore";
 import { uiOverrides } from "./physics/ui/overrides";
 import { CollectionProvider } from "../tldraw-collections/src";
-import { PhysicsCollection } from "./PhysicsCollection";
+import { PhysicsCollection } from "./physics/PhysicsCollection";
 import { useState } from "react";
 
 const collections = [PhysicsCollection]
