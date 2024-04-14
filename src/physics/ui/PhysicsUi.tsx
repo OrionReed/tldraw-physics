@@ -23,8 +23,7 @@ export const PhysicsUi = track(() => {
 
 	const handleShortcut = () => {
 		if (!collection) return
-		const empty = collection.getShapes().size === 0
-		if (empty)
+		if (size === 0)
 			collection.add(editor.getCurrentPageShapes())
 		else
 			collection.clear()
