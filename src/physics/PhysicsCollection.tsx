@@ -1,11 +1,28 @@
 import { BaseCollection } from '../../tldraw-collections/src';
-import RAPIER from "@dimforge/rapier2d";
-import { Editor, Geometry2d, TLDrawShape, TLGeoShape, TLGroupShape, TLShape, TLShapeId, VecLike } from "@tldraw/tldraw";
 import {
+  Editor,
+  TLDrawShape,
+  TLGeoShape,
+  TLGroupShape,
+  TLParentId,
+  TLShape,
+  TLShapeId,
+  VecLike
+} from "@tldraw/tldraw";
+import RAPIER from "@dimforge/rapier2d";
+import {
+  CHARACTER,
+  GRAVITY,
+  MATERIAL,
   centerToCorner,
   convertVerticesToFloat32Array,
   shouldConvexify,
-  cornerToCenter, getDisplacement, CHARACTER, GRAVITY, MATERIAL, getFrictionFromColor, getGravityFromColor, getRestitutionFromColor, isRigidbody
+  cornerToCenter,
+  getDisplacement,
+  getFrictionFromColor,
+  getGravityFromColor,
+  getRestitutionFromColor,
+  isRigidbody
 } from "./utils";
 
 type RigidbodyUserData = RAPIER.RigidBody & { id: TLShapeId; type: TLShape["type"]; w: number; h: number, rbType: RAPIER.RigidBodyType };
@@ -27,8 +44,17 @@ export class PhysicsCollection extends BaseCollection {
   }
 
   override onAdd(shapes: TLShape[]) {
+    const parentShapes = new Set<TLParentId>()
     for (const shape of shapes) {
-      if (this.colliderLookup.has(shape.id)) continue;
+      if (shape.parentId !== 'page:page') {
+        parentShapes.add(shape.parentId)
+        continue;
+      }
+      if (shape.type === "group") {
+        parentShapes.add(shape.id);
+        continue;
+      }
+      if (this.colliderLookup.has(shape.id) || this.rigidbodyLookup.has(shape.id)) continue;
       if ('color' in shape.props && shape.props.color === "violet") {
         this.createCharacterObject(shape as TLGeoShape);
       }
@@ -43,6 +69,11 @@ export class PhysicsCollection extends BaseCollection {
           this.createShape(shape);
           break;
       }
+    }
+    for (const parent of parentShapes) {
+      const parentShape = this.editor.getShape(parent)
+      if (!parentShape || parentShape.type !== "group") continue;
+      this.createGroupObject(parentShape as TLGroupShape)
     }
   }
 
@@ -170,17 +201,18 @@ export class PhysicsCollection extends BaseCollection {
   }
 
   createGroupObject(group: TLGroupShape) {
+
     // create rigidbody for group
     const rigidbody = this.createRigidbodyObject(group);
-    const rigidbodyGeometry = this.editor.getShapeGeometry(group);
 
     this.editor.getSortedChildIdsForParent(group.id).forEach((childId) => {
       // create collider for each
       const child = this.editor.getShape(childId);
       if (!child) return;
-      const isRb = "color" in child.props && isRigidbody(child?.props.color);
+      const isRb = "color" in child.props && isRigidbody(child.props.color);
       if (isRb) {
-        this.createColliderObject(child, rigidbody, rigidbodyGeometry);
+        console.log('child is rb so creating collider with parent');
+        this.createColliderObject(child, rigidbody, group);
       } else {
         this.createColliderObject(child);
       }
@@ -263,16 +295,17 @@ export class PhysicsCollection extends BaseCollection {
   private createColliderObject(
     shape: TLShape,
     parentRigidBody: RAPIER.RigidBody | null = null,
-    parentGeo: Geometry2d | null = null,
+    parentGroup: TLGroupShape | undefined = undefined,
   ) {
     const { w, h } = this.getShapeDimensionsOrBounds(shape);
+    const parentGroupShape = parentGroup ? this.editor.getShape(parentGroup.id) as TLGroupShape : undefined;
     const centerPosition = cornerToCenter({
       x: shape.x,
       y: shape.y,
       width: w,
       height: h,
       rotation: shape.rotation,
-      parent: parentGeo || undefined,
+      parentGroupShape: parentGroupShape,
     });
 
     const restitution =
@@ -306,7 +339,7 @@ export class PhysicsCollection extends BaseCollection {
       .setFriction(friction)
       .setFrictionCombineRule(RAPIER.CoefficientCombineRule.Min);
     if (parentRigidBody) {
-      if (parentGeo) {
+      if (parentGroup) {
         colliderDesc.setTranslation(centerPosition.x, centerPosition.y);
         colliderDesc.setRotation(shape.rotation);
       }
@@ -320,7 +353,6 @@ export class PhysicsCollection extends BaseCollection {
   }
 
   updateRigidbodies() {
-    // TODO: make this cheaper?
     this.world.bodies.forEach((rb) => {
       if (!rb.userData) return;
       const userData = rb.userData as RigidbodyUserData;

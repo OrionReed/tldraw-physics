@@ -1,4 +1,4 @@
-import { Geometry2d, TLGeoShape, TLShape, Vec, VecLike } from "@tldraw/tldraw";
+import { TLGeoShape, TLGroupShape, TLShape, Vec, VecLike } from "@tldraw/tldraw";
 
 export const GRAVITY = { x: 0.0, y: 98 };
 export const DEFAULT_RESTITUTION = 0;
@@ -44,7 +44,7 @@ type ShapeTransform = {
 	width: number;
 	height: number;
 	rotation: number;
-	parent?: Geometry2d;
+	parentGroupShape?: TLGroupShape | undefined
 }
 
 // Define rotatePoint as a standalone function
@@ -63,18 +63,15 @@ export const cornerToCenter = ({
 	width,
 	height,
 	rotation,
-	parent
+	parentGroupShape
 }: ShapeTransform): { x: number; y: number } => {
 	const centerX = x + width / 2;
 	const centerY = y + height / 2;
-	const rotatedCenter = rotatePoint(x, y, centerX, centerY, rotation);
-
-	if (parent) {
-		rotatedCenter.x -= parent.center.x;
-		rotatedCenter.y -= parent.center.y;
+	if (parentGroupShape) {
+		return rotatePoint(parentGroupShape.x, parentGroupShape.y, centerX, centerY, rotation);
 	}
+	return rotatePoint(x, y, centerX, centerY, rotation);
 
-	return rotatedCenter;
 }
 
 export const centerToCorner = ({
