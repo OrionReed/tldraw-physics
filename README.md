@@ -1,13 +1,16 @@
 # tldraw physics
 This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses [Rapier](https://rapier.rs), a rust-based physics engine compiled to [WASM](https://webassembly.org). It also uses a simple PoC 'Collections' system for TLDraw which can be found [here](https://github.com/OrionReed/tldraw-physics/tree/main/tldraw-collections). Try it out in your browser **[here](https://orionreed.github.io/tldraw-physics/)**
 
+
 https://github.com/OrionReed/tldraw-physics/assets/16704290/0967881e-1faa-46fb-8204-7b99a5a3556b
+
 
 ## Usage
 - Hitting 'P' adds/removes all shapes from the physics simulation.
 - Select some shapes and hit the 'Add' or 'Remove' buttons to add/remove only those shapes
 - Hit the '🔦' button to highlight the shapes in the physics simulation (this uses tldraw's hinting, it's quite subtle)
 - The number of shapes currently in the sim is shown at the top
+- When a shape is selected it is made kinematic, i.e. it will no longer move from forces and will only move if you move it.
 
 #### Rules
 All shapes can be colliders, but only Geo and Draw shapes can be rigidbodies (this is an arbitrary choice). Physical properties are determined by the shape's color:
@@ -26,7 +29,7 @@ You can group shapes to create compound rigidbodies. Physical properties are sti
 - Draw shapes use a very crude compound collider approach, where each vertex is turned into a sphere
 - There is no edge to the world, so rigidbodies will fall forever
 
-## Setup
+## Development
 ```bash
 yarn install
 yarn dev
