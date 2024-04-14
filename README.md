@@ -1,5 +1,5 @@
 # tldraw physics
-This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses [Rapier](https://rapier.rs), a rust-based physics engine compiled to [WASM](https://webassembly.org). It also uses a simple PoC 'Collections' system for TLDraw which can be found [here](https://github.com/OrionReed/tldraw-physics/tree/main/tldraw-collections). Try it out in your browser **[here](https://orionreed.github.io/tldraw-physics/)**
+This repo demonstrates a simple physics integration with [tldraw](https://github.com/tldraw/tldraw). It uses [Rapier](https://rapier.rs), a rust-based physics engine compiled to [WASM](https://webassembly.org). It also uses a simple PoC 'Collections' system for TLDraw which can be found [here](https://github.com/OrionReed/tldraw-physics/tree/main/tldraw-collections). Try it out [in your browser](https://orionreed.github.io/tldraw-physics/).
 
 
 https://github.com/OrionReed/tldraw-physics/assets/16704290/0967881e-1faa-46fb-8204-7b99a5a3556b
