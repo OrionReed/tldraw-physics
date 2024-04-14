@@ -262,15 +262,14 @@ export class PhysicsCollection extends BaseCollection {
     relativeToParent: TLDrawShape,
     parentRigidBody: RAPIER.RigidBody | null = null,
   ) {
-    const radius = 5;
-    const parentGeo = this.editor.getShapeGeometry(relativeToParent);
+    const radius = 3;
     const center = cornerToCenter({
       x: point.x,
       y: point.y,
       width: radius,
       height: radius,
       rotation: 0,
-      parent: parentGeo,
+      parentGroupShape: relativeToParent,
     });
     let colliderDesc: RAPIER.ColliderDesc | null = null;
     colliderDesc = RAPIER.ColliderDesc.ball(radius);

@@ -44,7 +44,7 @@ type ShapeTransform = {
 	width: number;
 	height: number;
 	rotation: number;
-	parentGroupShape?: TLGroupShape | undefined
+	parentGroupShape?: TLShape | undefined
 }
 
 // Define rotatePoint as a standalone function

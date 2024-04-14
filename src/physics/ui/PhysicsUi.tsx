@@ -29,6 +29,10 @@ export const PhysicsUi = track(() => {
 			collection.clear()
 	};
 
+	const handleHelp = () => {
+		alert("Use the 'Add' and 'Remove' buttons to add/remove selected shapes, or hit 'P' to add/remove all shapes. \n\nUse the highlight button (🔦) to visualize shapes in the simulation. \n\nShapes' physical properties vary by color (Orange is bouncy, Blue is slippery, Violet is a keyboard-controlled character, etc). \n\nYou can group shapes for compound rigidbodies. \n\nFor more details, check the project's README.");
+	}
+
 	const handleHighlight = () => {
 		if (collection) {
 			editor.setHintingShapes([...collection.getShapes().values()])
@@ -46,6 +50,7 @@ export const PhysicsUi = track(() => {
 		<div className="custom-layout">
 			<div className="custom-toolbar">
 				<div>
+
 					<button
 						type="button"
 						title="Add Selected"
@@ -69,6 +74,14 @@ export const PhysicsUi = track(() => {
 						onClick={handleHighlight}
 					>
 						🔦
+					</button>
+					<button
+						type="button"
+						title="Show Help"
+						className="custom-button"
+						onClick={handleHelp}
+					>
+						⁉️
 					</button>
 				</div>
 				<span>{size} shapes</span>
