@@ -1,48 +1,38 @@
 import { track, useEditor } from "@tldraw/tldraw";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "../../css/physics-ui.css";
 import { useCollection } from "../../../tldraw-collections/src";
 
 export const PhysicsUi = track(() => {
 	const editor = useEditor();
-	const physicsCollection = useCollection('physics')
-
-	const [size, setSize] = useState(0)
-
-	const updateSize = () => {
-		setSize(physicsCollection.getShapes().size)
-	}
+	const { collection, size } = useCollection('physics')
 
 	const handleAdd = () => {
-		if (physicsCollection) {
-			physicsCollection.add(editor.getSelectedShapes())
+		if (collection) {
+			collection.add(editor.getSelectedShapes())
 			editor.selectNone()
-			updateSize()
 		}
 	}
 
 	const handleRemove = () => {
-		if (physicsCollection) {
-			physicsCollection.remove(editor.getSelectedShapes())
+		if (collection) {
+			collection.remove(editor.getSelectedShapes())
 			editor.selectNone()
-			updateSize()
 		}
 	}
 
 	const handleShortcut = () => {
-		if (!physicsCollection) return
-		const empty = physicsCollection.getShapes().size === 0
+		if (!collection) return
+		const empty = collection.getShapes().size === 0
 		if (empty)
-			physicsCollection.add(editor.getCurrentPageShapes())
+			collection.add(editor.getCurrentPageShapes())
 		else
-			physicsCollection.clear()
-		updateSize()
+			collection.clear()
 	};
 
 	const handleHighlight = () => {
-		if (physicsCollection) {
-			editor.setHintingShapes([...physicsCollection.getShapes().values()])
-			updateSize()
+		if (collection) {
+			editor.setHintingShapes([...collection.getShapes().values()])
 		}
 	}
 
