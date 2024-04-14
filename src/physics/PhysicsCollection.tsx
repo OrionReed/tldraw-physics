@@ -211,7 +211,6 @@ export class PhysicsCollection extends BaseCollection {
       if (!child) return;
       const isRb = "color" in child.props && isRigidbody(child.props.color);
       if (isRb) {
-        console.log('child is rb so creating collider with parent');
         this.createColliderObject(child, rigidbody, group);
       } else {
         this.createColliderObject(child);

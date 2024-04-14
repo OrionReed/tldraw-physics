@@ -2,7 +2,7 @@ import { TLGeoShape, TLGroupShape, TLShape, Vec, VecLike } from "@tldraw/tldraw"
 
 export const GRAVITY = { x: 0.0, y: 98 };
 export const DEFAULT_RESTITUTION = 0;
-export const DEFAULT_FRICTION = 0.1;
+export const DEFAULT_FRICTION = 0.5;
 
 export function isRigidbody(color: string) {
 	return !color || color === "black" ? false : true;
